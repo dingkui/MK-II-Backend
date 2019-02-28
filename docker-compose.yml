@@ -1,0 +1,37 @@
+version: '3'
+services:
+
+  mk-mysql:
+    image: mariadb:latest
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin111
+    ports:
+      - "13326:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+
+  mk-redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - 32768:6379
+    volumes:
+      - /app/redis/redis.conf:/etc/redis/redis.conf
+    command: redis-server /etc/redis/redis.conf
+
+  mk-II-backend:
+    container_name: mk-II-backend:v1.0
+    build:
+      context: ./
+    ports:
+      - "8080:8080"
+
+  mk-II-front:
+    container_name: mk-II-front:v1.0
+    build:
+      context: ./
+    ports:
+      - "8081:8081"
