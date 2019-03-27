@@ -1,16 +1,11 @@
 package com.mileworks.gen.job.service;
 
-import com.mileworks.gen.common.domain.QueryRequest;
-import com.mileworks.gen.common.service.IService;
+import com.baomidou.mybatisplus.service.IService;
 import com.mileworks.gen.job.domain.Job;
-
-import java.util.List;
 
 public interface JobService extends IService<Job> {
 
     Job findJob(Long jobId);
-
-    List<Job> findJobs(QueryRequest request, Job job);
 
     void createJob(Job job);
 

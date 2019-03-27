@@ -1,34 +1,34 @@
 package com.mileworks.gen.system.domain;
 
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
-import javax.persistence.Table;
 import java.util.Date;
 
-@Table(name = "t_login_log")
+@TableName("t_login_log")
 @ToString
 @Data
 public class LoginLog {
     /**
      * 用户 ID
      */
-    @Column(name = "USERNAME")
+    @TableField("USERNAME")
     private String username;
 
     /**
      * 登录时间
      */
-    @Column(name = "LOGIN_TIME")
+    @TableField("LOGIN_TIME")
     private Date loginTime;
 
     /**
      * 登录地点
      */
-    @Column(name = "LOCATION")
+    @TableField("LOCATION")
     private String location;
 
-    @Column(name = "IP")
+    @TableField("IP")
     private String ip;
 }

@@ -1,14 +1,14 @@
 package com.mileworks.gen.system.dao;
 
 
-import com.mileworks.gen.common.config.MyMapper;
+import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.mileworks.gen.system.domain.LoginLog;
 import com.mileworks.gen.system.domain.User;
 
 import java.util.List;
 import java.util.Map;
 
-public interface LoginLogMapper extends MyMapper<LoginLog> {
+public interface LoginLogMapper extends BaseMapper<LoginLog> {
 
     /**
      * 获取系统总访问次数

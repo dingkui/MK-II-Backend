@@ -1,13 +1,15 @@
 package com.mileworks.gen.system.controller;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
 import com.mileworks.gen.common.annotation.Log;
-import com.mileworks.gen.common.controller.BaseController;
 import com.mileworks.gen.common.domain.QueryRequest;
 import com.mileworks.gen.common.exception.MKException;
 import com.mileworks.gen.system.domain.Dict;
 import com.mileworks.gen.system.service.DictService;
 import com.wuwenze.poi.ExcelKit;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -17,13 +19,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Validated
 @RestController
 @RequestMapping("dict")
-public class DictController extends BaseController {
+public class DictController {
 
     private String message;
 
@@ -32,8 +33,24 @@ public class DictController extends BaseController {
 
     @GetMapping
     @RequiresPermissions("dict:view")
-    public Map<String, Object> DictList(QueryRequest request, Dict dict) {
-        return super.selectByPageNumSize(request, () -> this.dictService.findDicts(request, dict));
+    public Page<Dict> DictList(QueryRequest request, Dict dict) {
+        EntityWrapper<Dict> dictWrapper = new EntityWrapper<>();
+        dictWrapper.orderBy(request.getSortField());
+
+        if (StringUtils.isNotBlank(dict.getKeyy())) {
+            dictWrapper.eq("keyy", Long.valueOf(dict.getKeyy()));
+        }
+        if (StringUtils.isNotBlank(dict.getValuee())) {
+            dictWrapper.eq("valuee", dict.getValuee());
+        }
+        if (StringUtils.isNotBlank(dict.getTableName())) {
+            dictWrapper.eq("table_name", dict.getTableName());
+        }
+        if (StringUtils.isNotBlank(dict.getFieldName())) {
+            dictWrapper.eq("field_name", dict.getFieldName());
+        }
+        Page<Dict> jobLogPage = new Page<>(request.getPageNum(), request.getPageSize());
+        return this.dictService.selectPage(jobLogPage, dictWrapper);
     }
 
     @Log("新增字典")

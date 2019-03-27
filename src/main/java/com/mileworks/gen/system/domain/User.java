@@ -1,5 +1,9 @@
 package com.mileworks.gen.system.domain;
 
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableId;
+import com.baomidou.mybatisplus.annotations.TableName;
+import com.baomidou.mybatisplus.enums.IdType;
 import com.mileworks.gen.common.converter.TimeConverter;
 import com.mileworks.gen.common.domain.RegexpConstant;
 import com.wuwenze.poi.annotation.Excel;
@@ -7,7 +11,6 @@ import com.wuwenze.poi.annotation.ExcelField;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -17,7 +20,7 @@ import java.util.Date;
 
 @Data
 @ToString
-@Table(name = "t_user")
+@TableName("t_user")
 @Excel("用户信息表")
 public class User implements Serializable {
 
@@ -43,87 +46,85 @@ public class User implements Serializable {
     // 默认密码
     public static final String DEFAULT_PASSWORD = "1234qwer";
 
-    @Id
-    @GeneratedValue(generator = "JDBC")
-    @Column(name = "USER_ID")
+    @TableId(value = "USER_ID", type = IdType.AUTO)
     private Long userId;
 
-    @Column(name = "USERNAME")
+    @TableField("USERNAME")
     @Size(min = 4, max = 10, message = "{range}")
     @ExcelField(value = "用户名")
     private String username;
 
-    @Column(name = "PASSWORD")
+    @TableField("PASSWORD")
     private String password;
 
-    @Column(name = "DEPT_ID")
+    @TableField("DEPT_ID")
     private Long deptId;
 
-    @Transient
+    @TableField(exist = false)
     @ExcelField(value = "部门")
     private String deptName;
 
-    @Column(name = "EMAIL")
+    @TableField("EMAIL")
     @Size(max = 50, message = "{noMoreThan}")
     @Email(message = "{email}")
     @ExcelField(value = "邮箱")
     private String email;
 
-    @Column(name = "MOBILE")
+    @TableField("MOBILE")
     @Pattern(regexp = RegexpConstant.MOBILE_REG, message = "{mobile}")
     @ExcelField(value = "手机号")
     private String mobile;
 
-    @Column(name = "STATUS")
+    @TableField("STATUS")
     @NotBlank(message = "{required}")
     @ExcelField(value = "状态", writeConverterExp = "0=锁定,1=有效")
     private String status;
 
-    @Column(name = "CREATE_TIME")
+    @TableField("CREATE_TIME")
     @ExcelField(value = "创建时间", writeConverter = TimeConverter.class)
     private Date createTime;
 
-    @Column(name = "MODIFY_TIME")
+    @TableField("MODIFY_TIME")
     private Date modifyTime;
 
-    @Column(name = "LAST_LOGIN_TIME")
+    @TableField("LAST_LOGIN_TIME")
     @ExcelField(value = "最后登录时间", writeConverter = TimeConverter.class)
     private Date lastLoginTime;
 
-    @Column(name = "SSEX")
+    @TableField("SSEX")
     @NotBlank(message = "{required}")
     @ExcelField(value = "性别", writeConverterExp = "0=男,1=女,2=保密")
     private String ssex;
 
-    @Column(name = "DESCRIPTION")
+    @TableField("DESCRIPTION")
     @Size(max = 100, message = "{noMoreThan}")
     @ExcelField(value = "个人描述")
     private String description;
 
-    @Column(name = "AVATAR")
+    @TableField("AVATAR")
     private String avatar;
 
-    @Transient
+    @TableField(exist = false)
     @NotBlank(message = "{required}")
     private String roleId;
-    @Transient
+    @TableField(exist = false)
     @ExcelField(value = "角色")
     private String roleName;
 
     // 排序字段
-    @Transient
+    @TableField(exist = false)
     private String sortField;
 
     // 排序规则 ascend 升序 descend 降序
-    @Transient
+    @TableField(exist = false)
     private String sortOrder;
 
-    @Transient
+    @TableField(exist = false)
     private String createTimeFrom;
-    @Transient
+    @TableField(exist = false)
     private String createTimeTo;
 
-    @Transient
+    @TableField(exist = false)
     private String id;
 
     /**

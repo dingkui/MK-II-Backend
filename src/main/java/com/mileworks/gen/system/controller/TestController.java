@@ -1,13 +1,13 @@
 package com.mileworks.gen.system.controller;
 
-import com.mileworks.gen.common.controller.BaseController;
+import com.baomidou.mybatisplus.plugins.Page;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.mileworks.gen.common.domain.MKResponse;
 import com.mileworks.gen.common.domain.QueryRequest;
 import com.mileworks.gen.common.exception.MKException;
 import com.mileworks.gen.system.domain.Test;
 import com.mileworks.gen.system.service.TestService;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.wuwenze.poi.ExcelKit;
 import com.wuwenze.poi.handler.ExcelReadHandler;
 import com.wuwenze.poi.pojo.ExcelErrorField;
@@ -27,7 +27,7 @@ import java.util.stream.IntStream;
 @Slf4j
 @RestController
 @RequestMapping("test")
-public class TestController extends BaseController {
+public class TestController {
 
     private String message;
 
@@ -35,9 +35,11 @@ public class TestController extends BaseController {
     private TestService testService;
 
     @GetMapping
-    public Map<String, Object> findTests(QueryRequest request) {
-        return super.selectByPageNumSize(request, () -> this.testService.findTests());
+    public Page<Test> findTests(QueryRequest request) {
+        Page<Test> page = new Page<Test>(request.getPageNum(),request.getPageSize());
+        return this.testService.selectPage(page);
     }
+
 
     /**
      * 生成 Excel导入模板

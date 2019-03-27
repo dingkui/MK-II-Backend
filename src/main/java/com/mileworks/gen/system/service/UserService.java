@@ -1,7 +1,8 @@
 package com.mileworks.gen.system.service;
 
+import com.baomidou.mybatisplus.plugins.Page;
+import com.baomidou.mybatisplus.service.IService;
 import com.mileworks.gen.common.domain.QueryRequest;
-import com.mileworks.gen.common.service.IService;
 import com.mileworks.gen.system.domain.User;
 
 import java.util.List;
@@ -32,6 +33,14 @@ public interface UserService extends IService<User> {
      * @return List<User>
      */
     List<User> findUserDetail(User user, QueryRequest request);
+
+    /***
+     * 分页查询用户列表
+     * @param page
+     * @param user
+     * @return
+     */
+    Page<User> findUserPage(Page<User> page, User user);
 
     /**
      * 更新用户登录时间

@@ -1,7 +1,7 @@
 package com.mileworks.gen.system.controller;
 
+import com.baomidou.mybatisplus.plugins.Page;
 import com.mileworks.gen.common.annotation.Log;
-import com.mileworks.gen.common.controller.BaseController;
 import com.mileworks.gen.common.domain.QueryRequest;
 import com.mileworks.gen.common.exception.MKException;
 import com.mileworks.gen.common.utils.MD5Util;
@@ -21,13 +21,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Validated
 @RestController
 @RequestMapping("user")
-public class UserController extends BaseController {
+public class UserController {
 
     private String message;
 
@@ -48,8 +47,9 @@ public class UserController extends BaseController {
 
     @GetMapping
     @RequiresPermissions("user:view")
-    public Map<String, Object> userList(QueryRequest request, User user) {
-        return super.selectByPageNumSize(request, () -> this.userService.findUserDetail(user, request));
+    public Page<User> userList(QueryRequest request, User user) {
+        Page<User> userPage = new Page<>(request.getPageNum(),request.getPageSize());
+        return this.userService.findUserPage(userPage,user);
     }
 
     @Log("新增用户")

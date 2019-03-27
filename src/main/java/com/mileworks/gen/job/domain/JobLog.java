@@ -1,63 +1,57 @@
 package com.mileworks.gen.job.domain;
 
 
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableId;
+import com.baomidou.mybatisplus.annotations.TableName;
+import com.baomidou.mybatisplus.enums.IdType;
 import com.mileworks.gen.common.converter.TimeConverter;
 import com.wuwenze.poi.annotation.Excel;
 import com.wuwenze.poi.annotation.ExcelField;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
 @Data
 @ToString
-@Table(name = "t_job_log")
+@TableName("t_job_log")
 @Excel("调度日志信息表")
 public class JobLog implements Serializable {
 
     private static final long serialVersionUID = -7114915445674333148L;
 
-    @Id
-    @GeneratedValue(generator = "JDBC")
-    @Column(name = "LOG_ID")
+    @TableId(value = "LOG_ID", type = IdType.AUTO)
     private Long logId;
 
-    @Column(name = "JOB_ID")
     private Long jobId;
 
-    @Column(name = "BEAN_NAME")
     @ExcelField(value = "Bean名称")
     private String beanName;
 
-    @Column(name = "METHOD_NAME")
     @ExcelField(value = "方法名称")
     private String methodName;
 
-    @Column(name = "PARAMS")
     @ExcelField(value = "方法参数")
     private String params;
 
-    @Column(name = "STATUS")
     @ExcelField(value = "状态", writeConverterExp = "0=成功,1=失败")
     private String status;
 
-    @Column(name = "ERROR")
     @ExcelField(value = "异常信息")
     private String error;
 
-    @Column(name = "TIMES")
     @ExcelField(value = "耗时（毫秒）")
     private Long times;
 
-    @Column(name = "CREATE_TIME")
     @ExcelField(value = "执行时间", writeConverter = TimeConverter.class)
     private Date createTime;
 
-    @Transient
+    @TableField(exist = false)
     private String createTimeFrom;
-    @Transient
+
+    @TableField(exist = false)
     private String createTimeTo;
 
 }

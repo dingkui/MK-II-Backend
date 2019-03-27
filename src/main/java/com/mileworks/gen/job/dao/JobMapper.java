@@ -1,12 +1,12 @@
 package com.mileworks.gen.job.dao;
 
 
-import com.mileworks.gen.common.config.MyMapper;
+import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.mileworks.gen.job.domain.Job;
 
 import java.util.List;
 
-public interface JobMapper extends MyMapper<Job> {
+public interface JobMapper extends BaseMapper<Job> {
 	
 	List<Job> queryList();
 }

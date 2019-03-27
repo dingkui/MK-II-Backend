@@ -1,5 +1,26 @@
 package com.mileworks.gen.system.controller;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotBlank;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mileworks.gen.common.annotation.Limit;
 import com.mileworks.gen.common.authentication.JWTToken;
 import com.mileworks.gen.common.authentication.JWTUtil;
@@ -9,8 +30,11 @@ import com.mileworks.gen.common.domain.MKResponse;
 import com.mileworks.gen.common.exception.MKException;
 import com.mileworks.gen.common.properties.MKProperties;
 import com.mileworks.gen.common.service.RedisService;
-import com.mileworks.gen.common.utils.*;
-import com.mileworks.gen.common.utils.*;
+import com.mileworks.gen.common.utils.AddressUtil;
+import com.mileworks.gen.common.utils.DateUtil;
+import com.mileworks.gen.common.utils.IPUtil;
+import com.mileworks.gen.common.utils.MD5Util;
+import com.mileworks.gen.common.utils.MKUtil;
 import com.mileworks.gen.system.dao.LoginLogMapper;
 import com.mileworks.gen.system.domain.LoginLog;
 import com.mileworks.gen.system.domain.User;
@@ -18,17 +42,6 @@ import com.mileworks.gen.system.domain.UserConfig;
 import com.mileworks.gen.system.manager.UserManager;
 import com.mileworks.gen.system.service.LoginLogService;
 import com.mileworks.gen.system.service.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotBlank;
-import java.time.LocalDateTime;
-import java.util.*;
 
 @Validated
 @RestController

@@ -1,11 +1,14 @@
 package com.mileworks.gen.system.dao;
 
-import com.mileworks.gen.common.config.MyMapper;
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+import com.baomidou.mybatisplus.plugins.pagination.Pagination;
 import com.mileworks.gen.system.domain.User;
 
 import java.util.List;
 
-public interface UserMapper extends MyMapper<User> {
+public interface UserMapper extends BaseMapper<User> {
 
-	List<User> findUserDetail(User user);
+	List<User> findUserList(User user);
+
+	List<User> findUserList(Pagination page, User user);
 }

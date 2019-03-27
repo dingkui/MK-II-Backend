@@ -1,7 +1,7 @@
 package com.mileworks.gen.system.service;
 
+import com.baomidou.mybatisplus.service.IService;
 import com.mileworks.gen.common.domain.QueryRequest;
-import com.mileworks.gen.common.service.IService;
 import com.mileworks.gen.system.domain.Dict;
 
 import java.util.List;

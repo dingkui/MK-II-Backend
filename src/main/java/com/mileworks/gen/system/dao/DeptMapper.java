@@ -1,9 +1,9 @@
 package com.mileworks.gen.system.dao;
 
-import com.mileworks.gen.common.config.MyMapper;
+import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.mileworks.gen.system.domain.Dept;
 
-public interface DeptMapper extends MyMapper<Dept> {
+public interface DeptMapper extends BaseMapper<Dept> {
 
 	/**
 	 * 递归删除部门

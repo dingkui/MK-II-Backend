@@ -1,9 +1,11 @@
 package com.mileworks.gen.system.service.impl;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.mileworks.gen.common.domain.MKConstant;
 import com.mileworks.gen.common.domain.QueryRequest;
 import com.mileworks.gen.common.service.CacheService;
-import com.mileworks.gen.common.service.impl.BaseService;
 import com.mileworks.gen.common.utils.MD5Util;
 import com.mileworks.gen.system.dao.UserMapper;
 import com.mileworks.gen.system.dao.UserRoleMapper;
@@ -19,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,10 +30,8 @@ import java.util.List;
 @Slf4j
 @Service("userService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class UserServiceImpl extends BaseService<User> implements UserService {
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
-    @Autowired
-    private UserMapper userMapper;
     @Autowired
     private UserRoleMapper userRoleMapper;
     @Autowired
@@ -55,11 +54,12 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
 
     @Override
     public User findById(String userId) {
-        Example example = new Example(User.class);
-        example.createCriteria().andCondition("user_id=", Long.valueOf(userId));
-        List<User> list = this.selectByExample(example);
+        EntityWrapper<User> userWrapper = new EntityWrapper<>();
+        userWrapper.eq("user_id", Long.valueOf(userId));
+        List<User> list = this.selectList(userWrapper);
         return list.isEmpty() ? null : list.get(0);
     }
+
 
     @Override
     public List<User> findUserDetail(User user, QueryRequest request) {
@@ -71,7 +71,7 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
                 else if (StringUtils.equals(MKConstant.ORDER_DESC, request.getSortOrder()))
                     user.setSortOrder("desc");
             }
-            return this.userMapper.findUserDetail(user);
+            return this.baseMapper.findUserList(user);
         } catch (Exception e) {
             log.error("查询用户异常", e);
             return new ArrayList<>();
@@ -79,13 +79,20 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
     }
 
     @Override
+    public Page<User> findUserPage(Page<User> page, User user) {
+        List<User> userList= this.baseMapper.findUserList(page, user);
+        return page.setRecords(userList);
+    }
+
+    @Override
     @Transactional
     public void updateLoginTime(String username) throws Exception {
-        Example example = new Example(User.class);
-        example.createCriteria().andCondition("username=", username);
         User user = new User();
         user.setLastLoginTime(new Date());
-        this.userMapper.updateByExampleSelective(user, example);
+
+        EntityWrapper<User> userWrapper = new EntityWrapper<>();
+        userWrapper.eq("username", username);
+        this.update(user, userWrapper);
 
         // 重新将用户信息加载到 redis中
         cacheService.saveUser(username);
@@ -98,7 +105,7 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
         user.setCreateTime(new Date());
         user.setAvatar(User.DEFAULT_AVATAR);
         user.setPassword(MD5Util.encrypt(user.getUsername(), User.DEFAULT_PASSWORD));
-        this.save(user);
+        this.insert(user);
 
         // 保存用户角色
         String[] roles = user.getRoleId().split(",");
@@ -117,11 +124,11 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
         // 更新用户
         user.setPassword(null);
         user.setModifyTime(new Date());
-        this.updateNotNull(user);
+        this.updateById(user);
 
-        Example example = new Example(UserRole.class);
-        example.createCriteria().andCondition("user_id=", user.getUserId());
-        this.userRoleMapper.deleteByExample(example);
+        EntityWrapper<UserRole> userRoleWrapper = new EntityWrapper<>();
+        userRoleWrapper.eq("user_id", user.getUserId());
+        this.userRoleMapper.delete(userRoleWrapper);
 
         String[] roles = user.getRoleId().split(",");
         setUserRoles(user, roles);
@@ -139,7 +146,7 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
         this.userManager.deleteUserRedisCache(userIds);
 
         List<String> list = Arrays.asList(userIds);
-        this.batchDelete(list, "userId", User.class);
+        this.deleteBatchIds(list);
 
         // 删除用户角色
         this.userRoleService.deleteUserRolesByUserId(userIds);
@@ -150,7 +157,7 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
     @Override
     @Transactional
     public void updateProfile(User user) throws Exception {
-        this.updateNotNull(user);
+        this.updateById(user);
         // 重新缓存用户信息
         cacheService.saveUser(user.getUsername());
     }
@@ -158,11 +165,11 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
     @Override
     @Transactional
     public void updateAvatar(String username, String avatar) throws Exception {
-        Example example = new Example(User.class);
-        example.createCriteria().andCondition("username=", username);
+        EntityWrapper<User> userRoleWrapper = new EntityWrapper<>();
+        userRoleWrapper.eq("username", username);
         User user = new User();
         user.setAvatar(avatar);
-        this.userMapper.updateByExampleSelective(user, example);
+        this.baseMapper.update(user, userRoleWrapper);
         // 重新缓存用户信息
         cacheService.saveUser(username);
     }
@@ -170,11 +177,12 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
     @Override
     @Transactional
     public void updatePassword(String username, String password) throws Exception {
-        Example example = new Example(User.class);
-        example.createCriteria().andCondition("username=", username);
+        EntityWrapper<User> userRoleWrapper = new EntityWrapper<>();
+        userRoleWrapper.eq("username", username);
         User user = new User();
         user.setPassword(MD5Util.encrypt(username, password));
-        this.userMapper.updateByExampleSelective(user, example);
+        this.baseMapper.update(user, userRoleWrapper);
+
         // 重新缓存用户信息
         cacheService.saveUser(username);
     }
@@ -190,7 +198,7 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
         user.setSsex(User.SEX_UNKNOW);
         user.setAvatar(User.DEFAULT_AVATAR);
         user.setDescription("注册用户");
-        this.save(user);
+        this.insert(user);
 
         UserRole ur = new UserRole();
         ur.setUserId(user.getUserId());
@@ -207,13 +215,12 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
     @Override
     @Transactional
     public void resetPassword(String[] usernames) throws Exception {
-        for (String username: usernames) {
-
-            Example example = new Example(User.class);
-            example.createCriteria().andCondition("username=", username);
+        for (String username : usernames) {
+            EntityWrapper<User> userRoleWrapper = new EntityWrapper<>();
+            userRoleWrapper.eq("username", username);
             User user = new User();
             user.setPassword(MD5Util.encrypt(username, User.DEFAULT_PASSWORD));
-            this.userMapper.updateByExampleSelective(user, example);
+            this.baseMapper.update(user, userRoleWrapper);
 
             // 重新将用户信息加载到 redis中
             cacheService.saveUser(username);
@@ -228,5 +235,11 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
             ur.setRoleId(Long.valueOf(roleId));
             this.userRoleMapper.insert(ur);
         });
+    }
+
+    public static void main(String[] args) {
+        System.out.println(MD5Util.encrypt("mk", User.DEFAULT_PASSWORD));
+        System.out.println(MD5Util.encrypt("admin", User.DEFAULT_PASSWORD));
+        System.out.println(MD5Util.encrypt("jack", User.DEFAULT_PASSWORD));
     }
 }

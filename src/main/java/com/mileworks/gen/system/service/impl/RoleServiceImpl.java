@@ -1,8 +1,17 @@
 package com.mileworks.gen.system.service.impl;
 
-import com.mileworks.gen.common.domain.QueryRequest;
-import com.mileworks.gen.common.service.impl.BaseService;
-import com.mileworks.gen.common.utils.MKUtil;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.mileworks.gen.system.dao.RoleMapper;
 import com.mileworks.gen.system.dao.RoleMenuMapper;
 import com.mileworks.gen.system.domain.Role;
@@ -11,26 +20,14 @@ import com.mileworks.gen.system.manager.UserManager;
 import com.mileworks.gen.system.service.RoleMenuServie;
 import com.mileworks.gen.system.service.RoleService;
 import com.mileworks.gen.system.service.UserRoleService;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service("roleService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class RoleServiceImpl extends BaseService<Role> implements RoleService {
+public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements RoleService {
 
-    @Autowired
-    private RoleMapper roleMapper;
     @Autowired
     private RoleMenuMapper roleMenuMapper;
     @Autowired
@@ -41,42 +38,23 @@ public class RoleServiceImpl extends BaseService<Role> implements RoleService {
     private UserManager userManager;
 
     @Override
-    public List<Role> findRoles(Role role, QueryRequest request) {
-        try {
-            Example example = new Example(Role.class);
-            Example.Criteria criteria = example.createCriteria();
-            if (StringUtils.isNotBlank(role.getRoleName())) {
-                criteria.andCondition("role_name=", role.getRoleName());
-            }
-            if (StringUtils.isNotBlank(role.getCreateTimeFrom()) && StringUtils.isNotBlank(role.getCreateTimeTo())) {
-                criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') >=", role.getCreateTimeFrom());
-                criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') <=", role.getCreateTimeTo());
-            }
-            MKUtil.handleSort(request, example, "role_id");
-            return this.selectByExample(example);
-        } catch (Exception e) {
-            log.error("获取角色信息失败", e);
-            return new ArrayList<>();
-        }
-    }
-
-    @Override
     public List<Role> findUserRole(String userName) {
-        return this.roleMapper.findUserRole(userName);
+//        return this.roleMenuMapper.findUserRole(userName);
+        return new ArrayList<>();
     }
 
     @Override
     public Role findByName(String roleName) {
-        Example example = new Example(Role.class);
-        example.createCriteria().andCondition("lower(role_name)=", roleName.toLowerCase());
-        List<Role> list = this.selectByExample(example);
+        EntityWrapper<Role> roleWrapper = new EntityWrapper<>();
+        roleWrapper.and("lower(role_name)={0}", roleName.toLowerCase());
+        List<Role> list = this.selectList(roleWrapper);
         return list.isEmpty() ? null : list.get(0);
     }
 
     @Override
     public void createRole(Role role) {
         role.setCreateTime(new Date());
-        this.save(role);
+        this.insert(role);
 
         String[] menuIds = role.getMenuId().split(",");
         setRoleMenus(role, menuIds);
@@ -88,14 +66,13 @@ public class RoleServiceImpl extends BaseService<Role> implements RoleService {
         List<String> userIds = this.userRoleService.findUserIdsByRoleId(roleIds);
 
         List<String> list = Arrays.asList(roleIds);
-        this.batchDelete(list, "roleId", Role.class);
+        this.deleteBatchIds(list);
 
         this.roleMenuService.deleteRoleMenusByRoleId(roleIds);
         this.userRoleService.deleteUserRolesByRoleId(roleIds);
 
         // 重新将这些用户的角色和权限缓存到 Redis中
         this.userManager.loadUserPermissionRoleRedisCache(userIds);
-
     }
 
     @Override
@@ -105,11 +82,11 @@ public class RoleServiceImpl extends BaseService<Role> implements RoleService {
         List<String> userIds = this.userRoleService.findUserIdsByRoleId(roleId);
 
         role.setModifyTime(new Date());
-        this.updateNotNull(role);
+        this.updateById(role);
 
-        Example example = new Example(RoleMenu.class);
-        example.createCriteria().andCondition("role_id=", role.getRoleId());
-        this.roleMenuMapper.deleteByExample(example);
+        EntityWrapper<RoleMenu> roleMenuWrapper = new EntityWrapper<>();
+        roleMenuWrapper.eq("role_id", role.getRoleId());
+        this.roleMenuMapper.delete(roleMenuWrapper);
 
         String[] menuIds = role.getMenuId().split(",");
         setRoleMenus(role, menuIds);

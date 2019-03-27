@@ -1,8 +1,9 @@
 package com.mileworks.gen.job.service.impl;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.mileworks.gen.common.domain.QueryRequest;
-import com.mileworks.gen.common.service.impl.BaseService;
-import com.mileworks.gen.common.utils.MKUtil;
 import com.mileworks.gen.job.dao.JobMapper;
 import com.mileworks.gen.job.domain.Job;
 import com.mileworks.gen.job.service.JobService;
@@ -15,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.entity.Example.Criteria;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -27,20 +26,17 @@ import java.util.List;
 @Slf4j
 @Service("JobService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class JobServiceImpl extends BaseService<Job> implements JobService {
+public class JobServiceImpl extends ServiceImpl<JobMapper, Job> implements JobService {
 
     @Autowired
     private Scheduler scheduler;
-
-    @Autowired
-    private JobMapper jobMapper;
 
     /**
      * 项目启动时，初始化定时器
      */
     @PostConstruct
     public void init() {
-        List<Job> scheduleJobList = this.jobMapper.queryList();
+        List<Job> scheduleJobList = this.baseMapper.queryList();
         // 如果不存在，则创建
         scheduleJobList.forEach(scheduleJob -> {
             CronTrigger cronTrigger = ScheduleUtils.getCronTrigger(scheduler, scheduleJob.getJobId());
@@ -54,40 +50,7 @@ public class JobServiceImpl extends BaseService<Job> implements JobService {
 
     @Override
     public Job findJob(Long jobId) {
-        return this.selectByKey(jobId);
-    }
-
-    @Override
-    public List<Job> findJobs(QueryRequest request, Job job) {
-        try {
-            Example example = new Example(Job.class);
-            Criteria criteria = example.createCriteria();
-            if (StringUtils.isNotBlank(job.getBeanName())) {
-                criteria.andCondition("bean_name=", job.getBeanName());
-            }
-            if (StringUtils.isNotBlank(job.getMethodName())) {
-                criteria.andCondition("method_name=", job.getMethodName());
-            }
-            if (StringUtils.isNotBlank(job.getParams())) {
-                criteria.andCondition("params like", "%" + job.getParams() + "%");
-            }
-            if (StringUtils.isNotBlank(job.getRemark())) {
-                criteria.andCondition("remark like", "%" + job.getRemark() + "%");
-            }
-            if (StringUtils.isNotBlank(job.getStatus())) {
-                criteria.andCondition("status=", Long.valueOf(job.getStatus()));
-            }
-            if (StringUtils.isNotBlank(job.getCreateTimeFrom()) && StringUtils.isNotBlank(job.getCreateTimeTo())) {
-                criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') >=", job.getCreateTimeFrom());
-                criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') <=", job.getCreateTimeTo());
-            }
-
-            MKUtil.handleSort(request, example, "create_time");
-            return this.selectByExample(example);
-        } catch (Exception e) {
-            log.error("获取任务失败", e);
-            return new ArrayList<>();
-        }
+        return this.baseMapper.selectById(jobId);
     }
 
     @Override
@@ -95,7 +58,7 @@ public class JobServiceImpl extends BaseService<Job> implements JobService {
     public void createJob(Job job) {
         job.setCreateTime(new Date());
         job.setStatus(Job.ScheduleStatus.PAUSE.getValue());
-        this.save(job);
+        this.insert(job);
         ScheduleUtils.createScheduleJob(scheduler, job);
     }
 
@@ -103,7 +66,7 @@ public class JobServiceImpl extends BaseService<Job> implements JobService {
     @Transactional
     public void updateJob(Job job) {
         ScheduleUtils.updateScheduleJob(scheduler, job);
-        this.updateNotNull(job);
+        this.baseMapper.updateById(job);
     }
 
     @Override
@@ -111,18 +74,22 @@ public class JobServiceImpl extends BaseService<Job> implements JobService {
     public void deleteJobs(String[] jobIds) {
         List<String> list = Arrays.asList(jobIds);
         list.forEach(jobId -> ScheduleUtils.deleteScheduleJob(scheduler, Long.valueOf(jobId)));
-        this.batchDelete(list, "jobId", Job.class);
+        this.baseMapper.deleteBatchIds(list);
     }
 
     @Override
     @Transactional
     public int updateBatch(String jobIds, String status) {
         List<String> list = Arrays.asList(jobIds.split(","));
-        Example example = new Example(Job.class);
-        example.createCriteria().andIn("jobId", list);
-        Job job = new Job();
-        job.setStatus(status);
-        return this.jobMapper.updateByExampleSelective(job, example);
+        List<Job> jobs = new ArrayList<>();
+        for (String id : list) {
+            Job job = new Job();
+            job.setJobId(Long.valueOf(id));
+            job.setStatus(status);
+            jobs.add(job);
+        }
+        this.updateBatchById(jobs);
+        return list.size();
     }
 
     @Override

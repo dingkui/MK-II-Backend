@@ -17,14 +17,14 @@
         <result column="DESCRIPTION" jdbcType="VARCHAR" property="description"/>
     </resultMap>
 
-    <select id="findUserDetail" resultType="user" parameterType="user">
+    <select id="findUserList" resultType="user" parameterType="user">
         SELECT
         u.user_id userId,
         u.username,
         u.password,
         u.email,
         u.mobile,
-        u. STATUS,
+        u.STATUS,
         u.create_time createTime,
         u.ssex,
         d.dept_id deptId,
@@ -55,6 +55,9 @@
         <if test="ssex != null and ssex != ''">
             AND u.ssex = #{ssex}
         </if>
+        <if test="mobile != null and mobile != ''">
+            AND u.mobile = #{mobile}
+        </if>
         <if test="status != null and status != ''">
             AND u.status = #{status}
         </if>
@@ -68,4 +71,5 @@
             </otherwise>
         </choose>
     </select>
+
 </mapper>

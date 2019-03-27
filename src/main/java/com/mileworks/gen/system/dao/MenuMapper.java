@@ -1,11 +1,11 @@
 package com.mileworks.gen.system.dao;
 
-import com.mileworks.gen.common.config.MyMapper;
+import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.mileworks.gen.system.domain.Menu;
 
 import java.util.List;
 
-public interface MenuMapper extends MyMapper<Menu> {
+public interface MenuMapper extends BaseMapper<Menu> {
 
     List<Menu> findUserPermissions(String userName);
 

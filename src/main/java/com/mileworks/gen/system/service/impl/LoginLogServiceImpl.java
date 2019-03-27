@@ -1,9 +1,10 @@
 package com.mileworks.gen.system.service.impl;
 
-import com.mileworks.gen.common.service.impl.BaseService;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.mileworks.gen.common.utils.AddressUtil;
 import com.mileworks.gen.common.utils.HttpContextUtil;
 import com.mileworks.gen.common.utils.IPUtil;
+import com.mileworks.gen.system.dao.LoginLogMapper;
 import com.mileworks.gen.system.domain.LoginLog;
 import com.mileworks.gen.system.service.LoginLogService;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,7 @@ import java.util.Date;
 
 @Service("loginLogService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class LoginLogServiceImpl extends BaseService<LoginLog> implements LoginLogService {
+public class LoginLogServiceImpl extends ServiceImpl<LoginLogMapper,LoginLog> implements LoginLogService {
 
     @Override
     @Transactional
@@ -25,6 +26,6 @@ public class LoginLogServiceImpl extends BaseService<LoginLog> implements LoginL
         String ip = IPUtil.getIpAddr(request);
         loginLog.setIp(ip);
         loginLog.setLocation(AddressUtil.getCityInfo(ip));
-        this.save(loginLog);
+        this.insert(loginLog);
     }
 }

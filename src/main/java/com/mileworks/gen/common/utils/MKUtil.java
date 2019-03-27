@@ -2,7 +2,6 @@ package com.mileworks.gen.common.utils;
 
 import com.mileworks.gen.common.authentication.JWTUtil;
 import com.mileworks.gen.common.domain.MKConstant;
-import com.mileworks.gen.common.domain.QueryRequest;
 import com.mileworks.gen.common.function.CacheSelector;
 import com.mileworks.gen.common.service.CacheService;
 import com.mileworks.gen.system.domain.User;
@@ -10,7 +9,6 @@ import com.mileworks.gen.system.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
-import tk.mybatis.mapper.entity.Example;
 
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -110,27 +108,4 @@ public class MKUtil {
         return StringUtils.lowerCase(result.toString());
     }
 
-    /**
-     * 处理排序逻辑
-     *
-     * @param request     QueryRequest
-     * @param example     Example
-     * @param defaultSort 默认排序的字段
-     */
-    public static void handleSort(QueryRequest request, Example example, String defaultSort) {
-        if (StringUtils.isNotBlank(request.getSortField())
-                && StringUtils.isNotBlank(request.getSortOrder())
-                && !StringUtils.equalsIgnoreCase(request.getSortField(), "undefined")
-                && !StringUtils.equalsIgnoreCase(request.getSortOrder(), "undefined")) {
-            String orderCase;
-            if (StringUtils.equals(request.getSortOrder(), "ascend"))
-                orderCase = "asc";
-            else
-                orderCase = "desc";
-            String orderField = camelToUnderscore(request.getSortField());
-            example.setOrderByClause(orderField + " " + orderCase);
-        } else {
-            example.setOrderByClause(defaultSort);
-        }
-    }
 }

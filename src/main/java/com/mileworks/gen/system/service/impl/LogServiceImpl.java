@@ -1,16 +1,14 @@
 package com.mileworks.gen.system.service.impl;
 
-import com.mileworks.gen.common.annotation.Log;
-import com.mileworks.gen.common.domain.QueryRequest;
-import com.mileworks.gen.common.service.impl.BaseService;
-import com.mileworks.gen.common.utils.AddressUtil;
-import com.mileworks.gen.common.utils.MKUtil;
-import com.mileworks.gen.system.domain.SysLog;
-import com.mileworks.gen.system.service.LogService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,51 +17,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import tk.mybatis.mapper.entity.Example;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.*;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mileworks.gen.common.annotation.Log;
+import com.mileworks.gen.common.utils.AddressUtil;
+import com.mileworks.gen.system.dao.LogMapper;
+import com.mileworks.gen.system.domain.SysLog;
+import com.mileworks.gen.system.service.LogService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service("logService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class LogServiceImpl extends BaseService<SysLog> implements LogService {
+public class LogServiceImpl extends ServiceImpl<LogMapper, SysLog> implements LogService {
 
     @Autowired
     ObjectMapper objectMapper;
 
     @Override
-    public List<SysLog> findLogs(QueryRequest request, SysLog sysLog) {
-        try {
-            Example example = new Example(SysLog.class);
-            Example.Criteria criteria = example.createCriteria();
-            if (StringUtils.isNotBlank(sysLog.getUsername())) {
-                criteria.andCondition("username=", sysLog.getUsername().toLowerCase());
-            }
-            if (StringUtils.isNotBlank(sysLog.getOperation())) {
-                criteria.andCondition("operation like", "%" + sysLog.getOperation() + "%");
-            }
-            if (StringUtils.isNotBlank(sysLog.getLocation())) {
-                criteria.andCondition("location like", "%" + sysLog.getLocation() + "%");
-            }
-            if (StringUtils.isNotBlank(sysLog.getCreateTimeFrom()) && StringUtils.isNotBlank(sysLog.getCreateTimeTo())) {
-                criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') >=", sysLog.getCreateTimeFrom());
-                criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') <=", sysLog.getCreateTimeTo());
-            }
-            MKUtil.handleSort(request, example, "create_time desc");
-            return this.selectByExample(example);
-        } catch (Exception e) {
-            log.error("获取系统日志失败", e);
-            return new ArrayList<>();
-        }
-    }
-
-    @Override
     @Transactional
     public void deleteLogs(String[] logIds) {
         List<String> list = Arrays.asList(logIds);
-        this.batchDelete(list, "id", SysLog.class);
+        this.deleteBatchIds(list);
     }
 
     @Override
@@ -95,7 +73,7 @@ public class LogServiceImpl extends BaseService<SysLog> implements LogService {
         log.setCreateTime(new Date());
         log.setLocation(AddressUtil.getCityInfo(log.getIp()));
         // 保存系统日志
-        save(log);
+        insert(log);
     }
 
     @SuppressWarnings("unchecked")

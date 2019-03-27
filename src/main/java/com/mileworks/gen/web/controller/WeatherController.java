@@ -1,6 +1,5 @@
 package com.mileworks.gen.web.controller;
 
-import com.mileworks.gen.common.controller.BaseController;
 import com.mileworks.gen.common.domain.MKConstant;
 import com.mileworks.gen.common.domain.MKResponse;
 import com.mileworks.gen.common.exception.MKException;
@@ -18,7 +17,7 @@ import javax.validation.constraints.NotBlank;
 @Validated
 @RestController
 @RequestMapping("weather")
-public class WeatherController extends BaseController {
+public class WeatherController {
 
     @GetMapping
     @RequiresPermissions("weather:view")

@@ -1,8 +1,9 @@
 package com.mileworks.gen.system.service.impl;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.mileworks.gen.common.domain.MKConstant;
 import com.mileworks.gen.common.domain.Tree;
-import com.mileworks.gen.common.service.impl.BaseService;
 import com.mileworks.gen.common.utils.TreeUtil;
 import com.mileworks.gen.system.dao.MenuMapper;
 import com.mileworks.gen.system.domain.Menu;
@@ -14,46 +15,44 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
 
 @Slf4j
 @Service("menuService")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
-public class MenuServiceImpl extends BaseService<Menu> implements MenuService {
+public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
 
-    @Autowired
-    private MenuMapper menuMapper;
     @Autowired
     private UserManager userManager;
 
     @Override
     public List<Menu> findUserPermissions(String username) {
-        return this.menuMapper.findUserPermissions(username);
+        return this.baseMapper.findUserPermissions(username);
     }
 
     @Override
     public List<Menu> findUserMenus(String username) {
-        return this.menuMapper.findUserMenus(username);
+        return this.baseMapper.findUserMenus(username);
     }
 
     @Override
     public Map<String, Object> findMenus(Menu menu) {
         Map<String, Object> result = new HashMap<>();
         try {
-            Example example = new Example(Menu.class);
-            Example.Criteria criteria = example.createCriteria();
+
+            EntityWrapper<Menu> menuWrapper = new EntityWrapper<>();
+            menuWrapper.orderBy("order_num");
+
             if (StringUtils.isNotBlank(menu.getMenuName()))
-                criteria.andCondition("menu_name=", menu.getMenuName());
+                menuWrapper.eq("menu_name", menu.getMenuName());
             if (StringUtils.isNotBlank(menu.getType()))
-                criteria.andCondition("type=", Long.valueOf(menu.getType()));
+                menuWrapper.eq("type", Long.valueOf(menu.getType()));
             if (StringUtils.isNotBlank(menu.getCreateTimeFrom()) && StringUtils.isNotBlank(menu.getCreateTimeTo())) {
-                criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') >=", menu.getCreateTimeFrom());
-                criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') <=", menu.getCreateTimeTo());
+                menuWrapper.and("date_format(CREATE_TIME,'%Y-%m-%d') >={0}", menu.getCreateTimeFrom());
+                menuWrapper.and("date_format(CREATE_TIME,'%Y-%m-%d') <={0}", menu.getCreateTimeTo());
             }
-            example.setOrderByClause("order_num");
-            List<Menu> menus = this.selectByExample(example);
+            List<Menu> menus = this.selectList(menuWrapper);
             List<Tree<Menu>> trees = new ArrayList<>();
             List<String> ids = new ArrayList<>();
             buildTrees(trees, menus, ids);
@@ -77,18 +76,18 @@ public class MenuServiceImpl extends BaseService<Menu> implements MenuService {
 
     @Override
     public List<Menu> findMenuList(Menu menu) {
-        Example example = new Example(Menu.class);
-        Example.Criteria criteria = example.createCriteria();
+        EntityWrapper<Menu> menuWrapper = new EntityWrapper<>();
+        menuWrapper.orderBy("menu_id");
+
         if (StringUtils.isNotBlank(menu.getMenuName()))
-            criteria.andCondition("menu_name=", menu.getMenuName());
+            menuWrapper.eq("menu_name", menu.getMenuName());
         if (StringUtils.isNotBlank(menu.getType()))
-            criteria.andCondition("type=", Long.valueOf(menu.getType()));
+            menuWrapper.eq("type", Long.valueOf(menu.getType()));
         if (StringUtils.isNotBlank(menu.getCreateTimeFrom()) && StringUtils.isNotBlank(menu.getCreateTimeTo())) {
-            criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') >=", menu.getCreateTimeFrom());
-            criteria.andCondition("date_format(CREATE_TIME,'%Y-%m-%d') <=", menu.getCreateTimeTo());
+            menuWrapper.and("date_format(CREATE_TIME,'%Y-%m-%d') >={0}", menu.getCreateTimeFrom());
+            menuWrapper.and("date_format(CREATE_TIME,'%Y-%m-%d') <={0}", menu.getCreateTimeTo());
         }
-        example.setOrderByClause("menu_id");
-        return this.selectByExample(example);
+        return this.selectList(menuWrapper);
     }
 
     @Override
@@ -102,7 +101,7 @@ public class MenuServiceImpl extends BaseService<Menu> implements MenuService {
             menu.setIcon(null);
             menu.setComponent(null);
         }
-        this.save(menu);
+        this.insert(menu);
     }
 
     @Override
@@ -116,10 +115,10 @@ public class MenuServiceImpl extends BaseService<Menu> implements MenuService {
             menu.setIcon(null);
             menu.setComponent(null);
         }
-        this.updateNotNull(menu);
+        this.updateById(menu);
 
         // 查找与这些菜单/按钮关联的用户
-        List<String> userIds = this.menuMapper.findUserIdsByMenuId(String.valueOf(menu.getMenuId()));
+        List<String> userIds = this.baseMapper.findUserIdsByMenuId(String.valueOf(menu.getMenuId()));
         // 重新将这些用户的角色和权限缓存到 Redis中
         this.userManager.loadUserPermissionRoleRedisCache(userIds);
     }
@@ -129,9 +128,9 @@ public class MenuServiceImpl extends BaseService<Menu> implements MenuService {
     public void deleteMeuns(String[] menuIds) throws Exception {
         for (String menuId : menuIds) {
             // 查找与这些菜单/按钮关联的用户
-            List<String> userIds = this.menuMapper.findUserIdsByMenuId(String.valueOf(menuId));
+            List<String> userIds = this.baseMapper.findUserIdsByMenuId(String.valueOf(menuId));
             // 递归删除这些菜单/按钮
-            this.menuMapper.deleteMenus(menuId);
+            this.baseMapper.deleteMenus(menuId);
             // 重新将这些用户的角色和权限缓存到 Redis中
             this.userManager.loadUserPermissionRoleRedisCache(userIds);
         }
