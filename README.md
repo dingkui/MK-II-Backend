@@ -3,7 +3,7 @@
  
  - 技术选型：  
     * Spring Boot 2.1.0
-    * Mybatis,TK Mapper,Pagehelper （自行调研）
+    * Mybatis,Mybaits Plus （自行调研）
     * MySQL 5.7,Hikari,Redis
     * Shiro,JWT
     
