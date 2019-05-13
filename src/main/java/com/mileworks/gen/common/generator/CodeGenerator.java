@@ -31,7 +31,7 @@ public class CodeGenerator {
     // 数据库密码
     private static final String PASSWORD = "123456";
     // @author 值
-    private static final String AUTHOR = "MrBird";
+    private static final String AUTHOR = "xl";
     // 包的基础路径
     private static final String BASE_PACKAGE_URL = "com.mileworks.gen";
     // xml文件路径
@@ -105,9 +105,7 @@ public class CodeGenerator {
         System.out.println(("请输入" + tip + "："));
         if (scanner.hasNext()) {
             String ipt = scanner.next();
-            if (StringUtils.isNotBlank(ipt)) {
-                return ipt;
-            }
+            if (StringUtils.isNotBlank(ipt)) return ipt;
         }
         throw new MybatisPlusException("请输入正确的" + tip + "！");
     }

@@ -1,9 +1,9 @@
 package com.mileworks.gen.common.utils;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mileworks.gen.common.domain.MKConstant;
 import com.mileworks.gen.common.domain.QueryRequest;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -32,18 +32,16 @@ public class SortUtil {
                 && StringUtils.isNotBlank(request.getSortOrder())
                 && !StringUtils.equalsIgnoreCase(request.getSortField(), "undefined")
                 && !StringUtils.equalsIgnoreCase(request.getSortOrder(), "undefined")) {
-            if (StringUtils.equals(request.getSortOrder(), MKConstant.ORDER_DESC)) {
+            if (StringUtils.equals(request.getSortOrder(), MKConstant.ORDER_DESC))
                 page.setDesc(sortField);
-            } else {
+            else
                 page.setAsc(sortField);
-            }
         } else {
             if (StringUtils.isNotBlank(defaultSort)) {
-                if (StringUtils.equals(defaultOrder, MKConstant.ORDER_DESC)) {
+                if (StringUtils.equals(defaultOrder, MKConstant.ORDER_DESC))
                     page.setDesc(defaultSort);
-                } else {
+                else
                     page.setAsc(defaultSort);
-                }
             }
         }
     }
@@ -88,18 +86,16 @@ public class SortUtil {
                 && StringUtils.isNotBlank(request.getSortOrder())
                 && !StringUtils.equalsIgnoreCase(request.getSortField(), "undefined")
                 && !StringUtils.equalsIgnoreCase(request.getSortOrder(), "undefined")) {
-            if (StringUtils.equals(request.getSortOrder(), MKConstant.ORDER_DESC)) {
+            if (StringUtils.equals(request.getSortOrder(), MKConstant.ORDER_DESC))
                 wrapper.orderByDesc(sortField);
-            } else {
+            else
                 wrapper.orderByAsc(sortField);
-            }
         } else {
             if (StringUtils.isNotBlank(defaultSort)) {
-                if (StringUtils.equals(defaultOrder, MKConstant.ORDER_DESC)) {
+                if (StringUtils.equals(defaultOrder, MKConstant.ORDER_DESC))
                     wrapper.orderByDesc(defaultSort);
-                } else {
+                else
                     wrapper.orderByAsc(defaultSort);
-                }
             }
         }
     }

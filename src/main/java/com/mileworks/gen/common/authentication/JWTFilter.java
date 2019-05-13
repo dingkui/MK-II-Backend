@@ -1,7 +1,5 @@
 package com.mileworks.gen.common.authentication;
 
-import com.mileworks.gen.common.properties.MKProperties;
-import com.mileworks.gen.common.utils.MKUtil;
 import com.mileworks.gen.common.utils.SpringContextUtil;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import lombok.extern.slf4j.Slf4j;

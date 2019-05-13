@@ -13,9 +13,8 @@ public class TimeConverter implements WriteConverter {
     @Override
     public String convert(Object value) throws ExcelKitWriteConverterException {
         try {
-            if (value == null){
+            if (value == null)
                 return "";
-            }
             else {
                 return DateUtil.formatCSTTime(value.toString(), DateUtil.FULL_TIME_SPLIT_PATTERN);
             }

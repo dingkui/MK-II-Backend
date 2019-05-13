@@ -1,7 +1,6 @@
 package com.mileworks.gen.common.aspect;
 
 import com.mileworks.gen.common.authentication.JWTUtil;
-import com.mileworks.gen.common.properties.MKProperties;
 import com.mileworks.gen.common.utils.HttpContextUtil;
 import com.mileworks.gen.common.utils.IPUtil;
 import com.mileworks.gen.system.domain.SysLog;
@@ -21,8 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * AOP 记录用户操作日志
  *
- * @author MrBird
- * @link https://mrbird.cc/Spring-Boot-AOP%20log.html
+ * @author xl
+ * @link https://xl.cc/Spring-Boot-AOP%20log.html
  */
 @Slf4j
 @Aspect
