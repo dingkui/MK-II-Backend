@@ -1,5 +1,7 @@
 package com.mileworks.gen.common.service.impl;
 
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mileworks.gen.common.domain.MKConstant;
 import com.mileworks.gen.common.service.CacheService;
 import com.mileworks.gen.common.service.RedisService;
@@ -11,8 +13,6 @@ import com.mileworks.gen.system.service.MenuService;
 import com.mileworks.gen.system.service.RoleService;
 import com.mileworks.gen.system.service.UserConfigService;
 import com.mileworks.gen.system.service.UserService;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,10 +48,11 @@ public class CacheServiceImpl implements CacheService {
     @Override
     public User getUser(String username) throws Exception {
         String userString = this.redisService.get(MKConstant.USER_CACHE_PREFIX + username);
-        if (StringUtils.isBlank(userString))
+        if (StringUtils.isBlank(userString)) {
             throw new Exception();
-        else
+        } else {
             return this.mapper.readValue(userString, User.class);
+        }
     }
 
     @Override
@@ -79,10 +80,11 @@ public class CacheServiceImpl implements CacheService {
     @Override
     public UserConfig getUserConfig(String userId) throws Exception {
         String userConfigString = this.redisService.get(MKConstant.USER_CONFIG_CACHE_PREFIX + userId);
-        if (StringUtils.isBlank(userConfigString))
+        if (StringUtils.isBlank(userConfigString)) {
             throw new Exception();
-        else
+        } else {
             return this.mapper.readValue(userConfigString, UserConfig.class);
+        }
     }
 
     @Override

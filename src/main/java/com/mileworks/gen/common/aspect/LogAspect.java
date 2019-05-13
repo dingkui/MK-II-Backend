@@ -6,8 +6,8 @@ import com.mileworks.gen.common.utils.HttpContextUtil;
 import com.mileworks.gen.common.utils.IPUtil;
 import com.mileworks.gen.system.domain.SysLog;
 import com.mileworks.gen.system.service.LogService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -21,6 +21,8 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * AOP 记录用户操作日志
  *
+ * @author MrBird
+ * @link https://mrbird.cc/Spring-Boot-AOP%20log.html
  */
 @Slf4j
 @Aspect
@@ -28,7 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 public class LogAspect {
 
     @Autowired
-    private MKProperties MKProperties;
+    private com.mileworks.gen.common.properties.MKProperties mkProperties;
 
     @Autowired
     private LogService logService;
@@ -39,25 +41,24 @@ public class LogAspect {
     }
 
     @Around("pointcut()")
-    public Object around(ProceedingJoinPoint point) throws JsonProcessingException {
+    public Object around(ProceedingJoinPoint point) throws Throwable {
         Object result = null;
         long beginTime = System.currentTimeMillis();
-        try {
-            // 执行方法
-            result = point.proceed();
-        } catch (Throwable e) {
-            log.error(e.getMessage());
-        }
+        // 执行方法
+        result = point.proceed();
         // 获取 request
         HttpServletRequest request = HttpContextUtil.getHttpServletRequest();
         // 设置 IP 地址
         String ip = IPUtil.getIpAddr(request);
         // 执行时长(毫秒)
         long time = System.currentTimeMillis() - beginTime;
-        if (MKProperties.isOpenAopLog()) {
+        if (mkProperties.isOpenAopLog()) {
             // 保存日志
             String token = (String) SecurityUtils.getSubject().getPrincipal();
-            String username = JWTUtil.getUsername(token);
+            String username = "";
+            if (StringUtils.isNotBlank(token)) {
+                username = JWTUtil.getUsername(token);
+            }
 
             SysLog log = new SysLog();
             log.setUsername(username);

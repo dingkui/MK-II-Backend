@@ -3,6 +3,7 @@ package com.mileworks.gen.common.authentication;
 import com.mileworks.gen.common.properties.MKProperties;
 import com.mileworks.gen.common.utils.MKUtil;
 import com.mileworks.gen.common.utils.SpringContextUtil;
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -27,14 +28,17 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) throws UnauthorizedException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         MKProperties MKProperties = SpringContextUtil.getBean(MKProperties.class);
-        String[] anonUrl = StringUtils.splitByWholeSeparatorPreserveAllTokens(MKProperties.getShiro().getAnonUrl(), ",");
+        String[] anonUrl = StringUtils.splitByWholeSeparatorPreserveAllTokens(MKProperties.getShiro().getAnonUrl(), StringPool.COMMA);
 
         boolean match = false;
         for (String u : anonUrl) {
-            if (pathMatcher.match(u, httpServletRequest.getRequestURI()))
+            if (pathMatcher.match(u, httpServletRequest.getRequestURI())){
                 match = true;
+            }
         }
-        if (match) return true;
+        if (match) {
+            return true;
+        }
         if (isLoginAttempt(request, response)) {
             return executeLogin(request, response);
         }

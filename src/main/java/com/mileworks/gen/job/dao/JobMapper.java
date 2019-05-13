@@ -1,8 +1,8 @@
 package com.mileworks.gen.job.dao;
 
 
-import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.mileworks.gen.job.domain.Job;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
 

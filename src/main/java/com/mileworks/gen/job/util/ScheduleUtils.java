@@ -14,20 +14,20 @@ public class ScheduleUtils {
 
     }
 
-    private static final String JOB_NAME = "TASK_";
+    private static final String JOB_NAME_PREFIX = "TASK_";
 
     /**
      * 获取触发器key
      */
     private static TriggerKey getTriggerKey(Long jobId) {
-        return TriggerKey.triggerKey(JOB_NAME + jobId);
+        return TriggerKey.triggerKey(JOB_NAME_PREFIX + jobId);
     }
 
     /**
      * 获取jobKey
      */
     private static JobKey getJobKey(Long jobId) {
-        return JobKey.jobKey(JOB_NAME + jobId);
+        return JobKey.jobKey(JOB_NAME_PREFIX + jobId);
     }
 
     /**
@@ -45,7 +45,7 @@ public class ScheduleUtils {
     /**
      * 创建定时任务
      */
-    public static void createScheduleJob(Scheduler scheduler, com.mileworks.gen.job.domain.Job scheduleJob) {
+    public static void createScheduleJob(Scheduler scheduler, Job scheduleJob) {
         try {
             // 构建job信息
             JobDetail jobDetail = JobBuilder.newJob(ScheduleJob.class).withIdentity(getJobKey(scheduleJob.getJobId()))
@@ -60,12 +60,12 @@ public class ScheduleUtils {
                     .withSchedule(scheduleBuilder).build();
 
             // 放入参数，运行时的方法可以获取
-            jobDetail.getJobDataMap().put(com.mileworks.gen.job.domain.Job.JOB_PARAM_KEY, scheduleJob);
+            jobDetail.getJobDataMap().put(Job.JOB_PARAM_KEY, scheduleJob);
 
             scheduler.scheduleJob(jobDetail, trigger);
 
             // 暂停任务
-            if (scheduleJob.getStatus().equals(com.mileworks.gen.job.domain.Job.ScheduleStatus.PAUSE.getValue())) {
+            if (scheduleJob.getStatus().equals(Job.ScheduleStatus.PAUSE.getValue())) {
                 pauseJob(scheduler, scheduleJob.getJobId());
             }
         } catch (SchedulerException e) {
@@ -76,7 +76,7 @@ public class ScheduleUtils {
     /**
      * 更新定时任务
      */
-    public static void updateScheduleJob(Scheduler scheduler, com.mileworks.gen.job.domain.Job scheduleJob) {
+    public static void updateScheduleJob(Scheduler scheduler, Job scheduleJob) {
         try {
             TriggerKey triggerKey = getTriggerKey(scheduleJob.getJobId());
 
@@ -92,13 +92,13 @@ public class ScheduleUtils {
                 // 按新的cronExpression表达式重新构建trigger
                 trigger = trigger.getTriggerBuilder().withIdentity(triggerKey).withSchedule(scheduleBuilder).build();
                 // 参数
-                trigger.getJobDataMap().put(com.mileworks.gen.job.domain.Job.JOB_PARAM_KEY, scheduleJob);
+                trigger.getJobDataMap().put(Job.JOB_PARAM_KEY, scheduleJob);
             }
 
             scheduler.rescheduleJob(triggerKey, trigger);
 
             // 暂停任务
-            if (scheduleJob.getStatus().equals(com.mileworks.gen.job.domain.Job.ScheduleStatus.PAUSE.getValue())) {
+            if (scheduleJob.getStatus().equals(Job.ScheduleStatus.PAUSE.getValue())) {
                 pauseJob(scheduler, scheduleJob.getJobId());
             }
 
@@ -110,7 +110,7 @@ public class ScheduleUtils {
     /**
      * 立即执行任务
      */
-    public static void run(Scheduler scheduler, com.mileworks.gen.job.domain.Job scheduleJob) {
+    public static void run(Scheduler scheduler, Job scheduleJob) {
         try {
             // 参数
             JobDataMap dataMap = new JobDataMap();

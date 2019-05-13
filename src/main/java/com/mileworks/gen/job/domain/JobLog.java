@@ -1,11 +1,10 @@
 package com.mileworks.gen.job.domain;
 
 
-import com.baomidou.mybatisplus.annotations.TableField;
-import com.baomidou.mybatisplus.annotations.TableId;
-import com.baomidou.mybatisplus.annotations.TableName;
-import com.baomidou.mybatisplus.enums.IdType;
 import com.mileworks.gen.common.converter.TimeConverter;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.wuwenze.poi.annotation.Excel;
 import com.wuwenze.poi.annotation.ExcelField;
 import lombok.Data;
@@ -15,12 +14,15 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Data
-@ToString
 @TableName("t_job_log")
 @Excel("调度日志信息表")
 public class JobLog implements Serializable {
 
     private static final long serialVersionUID = -7114915445674333148L;
+    // 任务执行成功
+    public static final String JOB_SUCCESS = "0";
+    // 任务执行失败
+    public static final String JOB_FAIL = "1";
 
     @TableId(value = "LOG_ID", type = IdType.AUTO)
     private Long logId;
@@ -48,10 +50,7 @@ public class JobLog implements Serializable {
     @ExcelField(value = "执行时间", writeConverter = TimeConverter.class)
     private Date createTime;
 
-    @TableField(exist = false)
-    private String createTimeFrom;
-
-    @TableField(exist = false)
-    private String createTimeTo;
+    private transient String createTimeFrom;
+    private transient String createTimeTo;
 
 }

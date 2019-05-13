@@ -1,15 +1,13 @@
 package com.mileworks.gen.job.domain;
 
-import com.baomidou.mybatisplus.annotations.TableField;
-import com.baomidou.mybatisplus.annotations.TableId;
-import com.baomidou.mybatisplus.annotations.TableName;
-import com.baomidou.mybatisplus.enums.IdType;
 import com.mileworks.gen.common.annotation.IsCron;
 import com.mileworks.gen.common.converter.TimeConverter;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.wuwenze.poi.annotation.Excel;
 import com.wuwenze.poi.annotation.ExcelField;
 import lombok.Data;
-import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -17,7 +15,6 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Data
-@ToString
 @TableName("t_job")
 @Excel("定时任务信息表")
 public class Job implements Serializable {
@@ -82,9 +79,7 @@ public class Job implements Serializable {
     @ExcelField(value = "创建时间", writeConverter = TimeConverter.class)
     private Date createTime;
 
-    @TableField(exist = false)
-    private String createTimeFrom;
-    @TableField(exist = false)
-    private String createTimeTo;
+    private transient String createTimeFrom;
+    private transient String createTimeTo;
 
 }

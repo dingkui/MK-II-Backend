@@ -1,7 +1,6 @@
 package com.mileworks.gen.common.annotation;
 
 import com.mileworks.gen.common.validator.CronValidator;
-
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.ElementType;

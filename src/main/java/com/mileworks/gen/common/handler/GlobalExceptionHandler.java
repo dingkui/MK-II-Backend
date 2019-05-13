@@ -1,8 +1,9 @@
 package com.mileworks.gen.common.handler;
 
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.mileworks.gen.common.domain.MKResponse;
-import com.mileworks.gen.common.exception.MKException;
 import com.mileworks.gen.common.exception.LimitAccessException;
+import com.mileworks.gen.common.exception.MKException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -52,7 +53,7 @@ public class GlobalExceptionHandler {
         StringBuilder message = new StringBuilder();
         List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
         for (FieldError error : fieldErrors) {
-            message.append(error.getField()).append(error.getDefaultMessage()).append(",");
+            message.append(error.getField()).append(error.getDefaultMessage()).append(StringPool.COMMA);
         }
         message = new StringBuilder(message.substring(0, message.length() - 1));
         return new MKResponse().message(message.toString());
@@ -72,8 +73,8 @@ public class GlobalExceptionHandler {
         Set<ConstraintViolation<?>> violations = e.getConstraintViolations();
         for (ConstraintViolation<?> violation : violations) {
             Path path = violation.getPropertyPath();
-            String[] pathArr = StringUtils.splitByWholeSeparatorPreserveAllTokens(path.toString(), ".");
-            message.append(pathArr[1]).append(violation.getMessage()).append(",");
+            String[] pathArr = StringUtils.splitByWholeSeparatorPreserveAllTokens(path.toString(), StringPool.DOT);
+            message.append(pathArr[1]).append(violation.getMessage()).append(StringPool.COMMA);
         }
         message = new StringBuilder(message.substring(0, message.length() - 1));
         return new MKResponse().message(message.toString());

@@ -92,18 +92,22 @@ public class MKUtil {
      * @param value 待转换值
      * @return 结果
      */
-    private static String camelToUnderscore(String value) {
-        if (StringUtils.isBlank(value))
+    public static String camelToUnderscore(String value) {
+        if (StringUtils.isBlank(value)){
             return "";
+        }
         String[] arr = StringUtils.splitByCharacterTypeCamelCase(value);
-        if (arr.length == 0)
+        if (arr.length == 0){
             return "";
+        }
         StringBuilder result = new StringBuilder();
         IntStream.range(0, arr.length).forEach(i -> {
-            if (i != arr.length - 1)
+            if (i != arr.length - 1){
                 result.append(arr[i]).append("_");
-            else
+            }
+            else {
                 result.append(arr[i]);
+            }
         });
         return StringUtils.lowerCase(result.toString());
     }

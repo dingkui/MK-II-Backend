@@ -1,8 +1,6 @@
 package com.mileworks.gen.common.authentication;
 
-import com.mileworks.gen.common.domain.MKConstant;
 import com.mileworks.gen.common.service.RedisService;
-import com.mileworks.gen.common.utils.MKUtil;
 import com.mileworks.gen.common.utils.HttpContextUtil;
 import com.mileworks.gen.common.utils.IPUtil;
 import com.mileworks.gen.system.domain.User;
@@ -24,6 +22,7 @@ import java.util.Set;
 /**
  * 自定义实现 ShiroRealm，包含认证和授权两大模块
  *
+ * @author MrBird
  */
 public class ShiroRealm extends AuthorizingRealm {
 
@@ -78,7 +77,7 @@ public class ShiroRealm extends AuthorizingRealm {
         String encryptToken = MKUtil.encryptToken(token);
         String encryptTokenInRedis = null;
         try {
-            encryptTokenInRedis = redisService.get(MKConstant.TOKEN_CACHE_PREFIX + encryptToken + "." + ip);
+            encryptTokenInRedis = redisService.get(FebsConstant.TOKEN_CACHE_PREFIX + encryptToken + "." + ip);
         } catch (Exception ignore) {
         }
         // 如果找不到，说明已经失效
@@ -97,6 +96,6 @@ public class ShiroRealm extends AuthorizingRealm {
             throw new AuthenticationException("用户名或密码错误");
         if (!JWTUtil.verify(token, username, user.getPassword()))
             throw new AuthenticationException("token校验不通过");
-        return new SimpleAuthenticationInfo(token, token, "MK_shiro_realm");
+        return new SimpleAuthenticationInfo(token, token, "febs_shiro_realm");
     }
 }

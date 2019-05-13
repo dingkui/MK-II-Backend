@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 /**
  * Spring Context 工具类
  * 
- * @author mk
+ * @author MrBird
  *
  */
 @Component

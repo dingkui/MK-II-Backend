@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 /**
- * 主要用于定时删除 Redis中 key为 MK.user.active 中
+ * 主要用于定时删除 Redis中 key为 febs.user.active 中
  * 已经过期的 score
  */
 @Slf4j
