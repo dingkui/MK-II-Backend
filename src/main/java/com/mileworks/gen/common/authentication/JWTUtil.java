@@ -1,5 +1,6 @@
 package com.mileworks.gen.common.authentication;
 
+import com.mileworks.gen.common.properties.MKProperties;
 import com.mileworks.gen.common.utils.SpringContextUtil;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;

@@ -66,10 +66,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         try {
             if (request.getSortField() != null) {
                 user.setSortField(request.getSortField());
-                if (StringUtils.equals(MKConstant.ORDER_ASC, request.getSortOrder()))
+                if (StringUtils.equals(MKConstant.ORDER_ASC, request.getSortOrder())) {
                     user.setSortOrder("asc");
-                else if (StringUtils.equals(MKConstant.ORDER_DESC, request.getSortOrder()))
+                } else if (StringUtils.equals(MKConstant.ORDER_DESC, request.getSortOrder())) {
                     user.setSortOrder("desc");
+                }
             }
             return this.baseMapper.findUserList(user);
         } catch (Exception e) {
@@ -80,7 +81,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Page<User> findUserPage(Page<User> page, User user) {
-        List<User> userList= this.baseMapper.findUserList(page, user);
+        List<User> userList = this.baseMapper.findUserList(page, user);
         return page.setRecords(userList);
     }
 

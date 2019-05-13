@@ -4,6 +4,7 @@ import com.mileworks.gen.common.domain.MKConstant;
 import com.mileworks.gen.common.service.RedisService;
 import com.mileworks.gen.common.utils.HttpContextUtil;
 import com.mileworks.gen.common.utils.IPUtil;
+import com.mileworks.gen.common.utils.MKUtil;
 import com.mileworks.gen.system.domain.User;
 import com.mileworks.gen.system.manager.UserManager;
 import org.apache.commons.lang3.StringUtils;

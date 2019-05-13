@@ -1,5 +1,7 @@
 package com.mileworks.gen.common.authentication;
 
+import com.mileworks.gen.common.properties.MKProperties;
+import com.mileworks.gen.common.utils.MKUtil;
 import com.mileworks.gen.common.utils.SpringContextUtil;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +27,7 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) throws UnauthorizedException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        MKProperties MKProperties = SpringContextUtil.getBean(MKProperties.class);
+        MKProperties MKProperties = SpringContextUtil.getBean(com.mileworks.gen.common.properties.MKProperties.class);
         String[] anonUrl = StringUtils.splitByWholeSeparatorPreserveAllTokens(MKProperties.getShiro().getAnonUrl(), StringPool.COMMA);
 
         boolean match = false;

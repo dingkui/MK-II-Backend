@@ -7,6 +7,7 @@ import com.mileworks.gen.common.utils.IPUtil;
 import com.mileworks.gen.system.dao.LoginLogMapper;
 import com.mileworks.gen.system.domain.LoginLog;
 import com.mileworks.gen.system.service.LoginLogService;
+import org.lionsoul.ip2region.DbSearcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ public class LoginLogServiceImpl extends ServiceImpl<LoginLogMapper,LoginLog> im
         HttpServletRequest request = HttpContextUtil.getHttpServletRequest();
         String ip = IPUtil.getIpAddr(request);
         loginLog.setIp(ip);
-        loginLog.setLocation(AddressUtil.getCityInfo(ip));
+        loginLog.setLocation(AddressUtil.getCityInfo(DbSearcher.BTREE_ALGORITHM, ip));
         this.insert(loginLog);
     }
 }

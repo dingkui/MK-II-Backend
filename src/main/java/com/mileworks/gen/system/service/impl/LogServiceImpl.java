@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.lionsoul.ip2region.DbSearcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.stereotype.Service;
@@ -71,7 +72,7 @@ public class LogServiceImpl extends ServiceImpl<LogMapper, SysLog> implements Lo
             log.setParams(params.toString());
         }
         log.setCreateTime(new Date());
-        log.setLocation(AddressUtil.getCityInfo(log.getIp()));
+        log.setLocation(AddressUtil.getCityInfo(DbSearcher.BTREE_ALGORITHM, log.getIp()));
         // 保存系统日志
         insert(log);
     }
