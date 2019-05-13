@@ -12,6 +12,7 @@ import javax.validation.constraints.NotBlank;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.lionsoul.ip2region.DbSearcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -73,12 +74,16 @@ public class LoginController {
         final String errorMessage = "用户名或密码错误";
         User user = this.userManager.getUser(username);
 
-        if (user == null)
+        if (user == null){
             throw new MKException(errorMessage);
-        if (!StringUtils.equals(user.getPassword(), password))
+        }
+        if (!StringUtils.equals(user.getPassword(), password)){
             throw new MKException(errorMessage);
-        if (User.STATUS_LOCK.equals(user.getStatus()))
+        }
+
+        if (User.STATUS_LOCK.equals(user.getStatus())){
             throw new MKException("账号已被锁定,请联系管理员！");
+        }
 
         // 更新用户登录时间
         this.userService.updateLoginTime(username);
@@ -129,8 +134,9 @@ public class LoginController {
             ActiveUser activeUser = mapper.readValue(userOnlineString, ActiveUser.class);
             activeUser.setToken(null);
             if (StringUtils.isNotBlank(username)) {
-                if (StringUtils.equalsIgnoreCase(username, activeUser.getUsername()))
+                if (StringUtils.equalsIgnoreCase(username, activeUser.getUsername())){
                     activeUsers.add(activeUser);
+                }
             } else {
                 activeUsers.add(activeUser);
             }
@@ -180,7 +186,7 @@ public class LoginController {
         activeUser.setUsername(user.getUsername());
         activeUser.setIp(ip);
         activeUser.setToken(token.getToken());
-        activeUser.setLoginAddress(AddressUtil.getCityInfo(ip));
+        activeUser.setLoginAddress(AddressUtil.getCityInfo(DbSearcher.BTREE_ALGORITHM, ip));
 
         // zset 存储登录用户，score 为过期时间戳
         this.redisService.zadd(MKConstant.ACTIVE_USERS_ZSET_PREFIX, Double.valueOf(token.getExipreAt()), mapper.writeValueAsString(activeUser));
