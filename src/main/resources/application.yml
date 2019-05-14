@@ -39,8 +39,8 @@ spring:
     time-zone: GMT+8
 
   redis:
-    host: 101.37.27.202
-    port: 6379
+    host: 172.29.231.80
+    port: 32769
     password:
     jedis:
       pool:
@@ -67,6 +67,8 @@ management:
         include: ['httptrace', 'metrics']
 
 MK:
+  # 是否在控制台打印 SQL
+  showsql: false
   # 是否异步记录用户操作日志
   openAopLog: true
   # 单次最大批量入库数量
