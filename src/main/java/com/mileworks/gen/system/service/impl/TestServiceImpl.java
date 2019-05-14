@@ -19,7 +19,7 @@ import java.util.List;
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
 public class TestServiceImpl extends ServiceImpl<TestMapper, Test> implements TestService {
 
-    @Value("${febs.max.batch.insert.num}")
+    @Value("${MK.max.batch.insert.num}")
     private int batchInsertMaxNum;
 
     @Override
