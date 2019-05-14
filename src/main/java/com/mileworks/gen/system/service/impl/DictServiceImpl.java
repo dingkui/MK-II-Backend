@@ -1,19 +1,20 @@
 package com.mileworks.gen.system.service.impl;
 
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.plugins.Page;
-import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.mileworks.gen.common.domain.QueryRequest;
+import com.mileworks.gen.common.utils.SortUtil;
 import com.mileworks.gen.system.dao.DictMapper;
 import com.mileworks.gen.system.domain.Dict;
 import com.mileworks.gen.system.service.DictService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,47 +24,48 @@ import java.util.List;
 public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements DictService {
 
     @Override
-    public List<Dict> findDicts(QueryRequest request, Dict dict) {
+    public IPage<Dict> findDicts(QueryRequest request, Dict dict) {
         try {
-            EntityWrapper<Dict> dictWrapper = new EntityWrapper<>();
-            dictWrapper.orderBy(request.getSortField());
+            LambdaQueryWrapper<Dict> queryWrapper = new LambdaQueryWrapper<>();
 
             if (StringUtils.isNotBlank(dict.getKeyy())) {
-                dictWrapper.eq("keyy", Long.valueOf(dict.getKeyy()));
+                queryWrapper.eq(Dict::getKeyy, dict.getKeyy());
             }
             if (StringUtils.isNotBlank(dict.getValuee())) {
-                dictWrapper.eq("valuee", dict.getValuee());
+                queryWrapper.eq(Dict::getValuee, dict.getValuee());
             }
             if (StringUtils.isNotBlank(dict.getTableName())) {
-                dictWrapper.eq("table_name", dict.getTableName());
+                queryWrapper.eq(Dict::getTableName, dict.getTableName());
             }
             if (StringUtils.isNotBlank(dict.getFieldName())) {
-                dictWrapper.eq("field_name", dict.getFieldName());
+                queryWrapper.eq(Dict::getFieldName, dict.getFieldName());
             }
-            Page<Dict> jobLogPage = new Page<>(request.getPageNum(), request.getPageSize());
-            return this.selectPage(jobLogPage, dictWrapper).getRecords();
+
+            Page<Dict> page = new Page<>();
+            SortUtil.handlePageSort(request, page, true);
+            return this.page(page, queryWrapper);
         } catch (Exception e) {
             log.error("获取字典信息失败", e);
-            return new ArrayList<>();
+            return null;
         }
     }
 
     @Override
     @Transactional
     public void createDict(Dict dict) {
-        this.insert(dict);
+        this.save(dict);
     }
 
     @Override
     @Transactional
     public void updateDict(Dict dict) {
-        this.updateById(dict);
+        this.baseMapper.updateById(dict);
     }
 
     @Override
     @Transactional
     public void deleteDicts(String[] dictIds) {
         List<String> list = Arrays.asList(dictIds);
-        this.deleteBatchIds(list);
+        this.baseMapper.deleteBatchIds(list);
     }
 }

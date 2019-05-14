@@ -1,14 +1,21 @@
 package com.mileworks.gen.system.service.impl;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.mileworks.gen.common.annotation.Log;
+import com.mileworks.gen.common.domain.MKConstant;
+import com.mileworks.gen.common.domain.QueryRequest;
+import com.mileworks.gen.common.utils.AddressUtil;
+import com.mileworks.gen.common.utils.SortUtil;
+import com.mileworks.gen.system.dao.LogMapper;
+import com.mileworks.gen.system.domain.SysLog;
+import com.mileworks.gen.system.service.LogService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.lionsoul.ip2region.DbSearcher;
@@ -19,16 +26,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.baomidou.mybatisplus.service.impl.ServiceImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mileworks.gen.common.annotation.Log;
-import com.mileworks.gen.common.utils.AddressUtil;
-import com.mileworks.gen.system.dao.LogMapper;
-import com.mileworks.gen.system.domain.SysLog;
-import com.mileworks.gen.system.service.LogService;
-
-import lombok.extern.slf4j.Slf4j;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.*;
 
 @Slf4j
 @Service("logService")
@@ -39,10 +39,40 @@ public class LogServiceImpl extends ServiceImpl<LogMapper, SysLog> implements Lo
     ObjectMapper objectMapper;
 
     @Override
+    public IPage<SysLog> findLogs(QueryRequest request, SysLog sysLog) {
+        try {
+            QueryWrapper<SysLog> queryWrapper = new QueryWrapper<>();
+
+            if (StringUtils.isNotBlank(sysLog.getUsername())) {
+                queryWrapper.lambda().eq(SysLog::getUsername, sysLog.getUsername().toLowerCase());
+            }
+            if (StringUtils.isNotBlank(sysLog.getOperation())) {
+                queryWrapper.lambda().like(SysLog::getOperation, sysLog.getOperation());
+            }
+            if (StringUtils.isNotBlank(sysLog.getLocation())) {
+                queryWrapper.lambda().like(SysLog::getLocation, sysLog.getLocation());
+            }
+            if (StringUtils.isNotBlank(sysLog.getCreateTimeFrom()) && StringUtils.isNotBlank(sysLog.getCreateTimeTo())) {
+                queryWrapper.lambda()
+                        .ge(SysLog::getCreateTime, sysLog.getCreateTimeFrom())
+                        .le(SysLog::getCreateTime, sysLog.getCreateTimeTo());
+            }
+
+            Page<SysLog> page = new Page<>(request.getPageNum(), request.getPageSize());
+            SortUtil.handlePageSort(request, page, "createTime", MKConstant.ORDER_DESC, true);
+
+            return this.page(page, queryWrapper);
+        } catch (Exception e) {
+            log.error("获取系统日志失败", e);
+            return null;
+        }
+    }
+
+    @Override
     @Transactional
     public void deleteLogs(String[] logIds) {
         List<String> list = Arrays.asList(logIds);
-        this.deleteBatchIds(list);
+        baseMapper.deleteBatchIds(list);
     }
 
     @Override
@@ -74,16 +104,15 @@ public class LogServiceImpl extends ServiceImpl<LogMapper, SysLog> implements Lo
         log.setCreateTime(new Date());
         log.setLocation(AddressUtil.getCityInfo(DbSearcher.BTREE_ALGORITHM, log.getIp()));
         // 保存系统日志
-        insert(log);
+        save(log);
     }
 
-    @SuppressWarnings("unchecked")
     private StringBuilder handleParams(StringBuilder params, Object[] args, List paramNames) throws JsonProcessingException {
         for (int i = 0; i < args.length; i++) {
             if (args[i] instanceof Map) {
                 Set set = ((Map) args[i]).keySet();
-                List list = new ArrayList();
-                List paramList = new ArrayList<>();
+                List<Object> list = new ArrayList<>();
+                List<Object> paramList = new ArrayList<>();
                 for (Object key : set) {
                     list.add(((Map) args[i]).get(key));
                     paramList.add(key);

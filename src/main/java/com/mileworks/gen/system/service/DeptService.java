@@ -1,9 +1,9 @@
 package com.mileworks.gen.system.service;
 
 
-import com.baomidou.mybatisplus.service.IService;
 import com.mileworks.gen.common.domain.QueryRequest;
 import com.mileworks.gen.system.domain.Dept;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 import java.util.Map;

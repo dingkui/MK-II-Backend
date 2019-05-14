@@ -1,13 +1,14 @@
 package com.mileworks.gen.system.controller;
 
-import com.baomidou.mybatisplus.plugins.Page;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import com.mileworks.gen.common.controller.BaseController;
 import com.mileworks.gen.common.domain.MKResponse;
 import com.mileworks.gen.common.domain.QueryRequest;
 import com.mileworks.gen.common.exception.MKException;
 import com.mileworks.gen.system.domain.Test;
 import com.mileworks.gen.system.service.TestService;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.wuwenze.poi.ExcelKit;
 import com.wuwenze.poi.handler.ExcelReadHandler;
 import com.wuwenze.poi.pojo.ExcelErrorField;
@@ -27,7 +28,7 @@ import java.util.stream.IntStream;
 @Slf4j
 @RestController
 @RequestMapping("test")
-public class TestController {
+public class TestController extends BaseController {
 
     private String message;
 
@@ -35,11 +36,10 @@ public class TestController {
     private TestService testService;
 
     @GetMapping
-    public Page<Test> findTests(QueryRequest request) {
-        Page<Test> page = new Page<Test>(request.getPageNum(),request.getPageSize());
-        return this.testService.selectPage(page);
+    public Map<String, Object> findTests(QueryRequest request) {
+        Page<Test> page = new Page<>(request.getPageNum(), request.getPageSize());
+        return getDataTable(testService.page(page, null));
     }
-
 
     /**
      * 生成 Excel导入模板
@@ -52,7 +52,7 @@ public class TestController {
             Test test = new Test();
             test.setField1("字段1");
             test.setField2(i + 1);
-            test.setField3("mk" + i + "@gmail.com");
+            test.setField3("mrbird" + i + "@gmail.com");
             list.add(test);
         });
         // 构建模板

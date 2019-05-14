@@ -1,9 +1,9 @@
 package com.mileworks.gen.system.service;
 
-import com.baomidou.mybatisplus.service.IService;
 import com.mileworks.gen.system.domain.LoginLog;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 public interface LoginLogService extends IService<LoginLog> {
 
-    void saveLoginLog(LoginLog loginLog);
+    void saveLoginLog (LoginLog loginLog);
 }

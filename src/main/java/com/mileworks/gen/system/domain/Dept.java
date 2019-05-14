@@ -1,10 +1,9 @@
 package com.mileworks.gen.system.domain;
 
-import com.baomidou.mybatisplus.annotations.TableField;
-import com.baomidou.mybatisplus.annotations.TableId;
-import com.baomidou.mybatisplus.annotations.TableName;
-import com.baomidou.mybatisplus.enums.IdType;
 import com.mileworks.gen.common.converter.TimeConverter;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.wuwenze.poi.annotation.Excel;
 import com.wuwenze.poi.annotation.ExcelField;
 import lombok.Data;
@@ -24,30 +23,23 @@ public class Dept implements Serializable {
     @TableId(value = "DEPT_ID", type = IdType.AUTO)
     private Long deptId;
 
-    @TableField("PARENT_ID")
     private Long parentId;
 
-    @TableField("DEPT_NAME")
     @NotBlank(message = "{required}")
     @Size(max = 20, message = "{noMoreThan}")
     @ExcelField(value = "部门名称")
     private String deptName;
 
-    @TableField("ORDER_NUM")
     private Double orderNum;
 
-    @TableField("CREATE_TIME")
     @ExcelField(value = "创建时间", writeConverter = TimeConverter.class)
     private Date createTime;
 
-    @TableField("MODIFY_TIME")
     @ExcelField(value = "修改时间", writeConverter = TimeConverter.class)
     private Date modifyTime;
 
-    @TableField(exist = false)
-    private String createTimeFrom;
+    private transient String createTimeFrom;
 
-    @TableField(exist = false)
-    private String createTimeTo;
+    private transient String createTimeTo;
 
 }

@@ -335,3 +335,11 @@ target/classes/generator/templates/service.java.ftl
 target/classes/generator/templates/serviceImpl.java.ftl
 target/classes/mapper/system/UserRoleMapper.xml
 target/classes/spy.properties
+MK-II.iml
+log/info/info.2019-05-14.log
+log/error/error.2019-05-14.log
+target/classes/com/mileworks/gen/common/config/JacksonRedisSerializer.class
+target/classes/com/mileworks/gen/common/config/MybatisPlusConfig.class
+target/classes/com/mileworks/gen/common/config/P6spySqlFormatConfig.class
+target/classes/com/mileworks/gen/common/generator/CodeGenerator.class
+target/classes/com/mileworks/gen/common/utils/SortUtil.class

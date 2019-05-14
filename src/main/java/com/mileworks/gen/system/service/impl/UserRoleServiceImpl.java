@@ -1,10 +1,10 @@
 package com.mileworks.gen.system.service.impl;
 
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.mileworks.gen.system.dao.UserRoleMapper;
 import com.mileworks.gen.system.domain.UserRole;
 import com.mileworks.gen.system.service.UserRoleService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,31 +17,23 @@ import java.util.stream.Collectors;
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
 public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> implements UserRoleService {
 
-    @Override
-    @Transactional
-    public void deleteUserRolesByRoleId(String[] roleIds) {
-        List<String> list = Arrays.asList(roleIds);
-        EntityWrapper<UserRole> roleMenuWrapper = new EntityWrapper<>();
-        roleMenuWrapper.in("ROLE_ID", list);
-        this.delete(roleMenuWrapper);
-    }
+	@Override
+	@Transactional
+	public void deleteUserRolesByRoleId(String[] roleIds) {
+		Arrays.stream(roleIds).forEach(id -> baseMapper.deleteByRoleId(Long.valueOf(id)));
+	}
 
-    @Override
-    @Transactional
-    public void deleteUserRolesByUserId(String[] userIds) {
-        List<String> list = Arrays.asList(userIds);
-        EntityWrapper<UserRole> roleMenuWrapper = new EntityWrapper<>();
-        roleMenuWrapper.in("USER_ID", list);
-        this.delete(roleMenuWrapper);
-    }
+	@Override
+	@Transactional
+	public void deleteUserRolesByUserId(String[] userIds) {
+		Arrays.stream(userIds).forEach(id -> baseMapper.deleteByUserId(Long.valueOf(id)));
+	}
 
-    @Override
-    public List<String> findUserIdsByRoleId(String[] roleIds) {
-        EntityWrapper<UserRole> userRoleWrapper = new EntityWrapper<>();
-        userRoleWrapper.in("ROLE_ID", Arrays.asList(roleIds));
-        List<UserRole> list = this.selectList(userRoleWrapper);
+	@Override
+	public List<String> findUserIdsByRoleId(String[] roleIds) {
 
-        return list.stream().map(userRole -> String.valueOf(userRole.getUserId())).collect(Collectors.toList());
-    }
+		List<UserRole> list = baseMapper.selectList(new LambdaQueryWrapper<UserRole>().in(UserRole::getRoleId, (Object) roleIds));
+		return list.stream().map(userRole -> String.valueOf(userRole.getUserId())).collect(Collectors.toList());
+	}
 
 }

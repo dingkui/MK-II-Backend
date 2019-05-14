@@ -1,19 +1,23 @@
 package com.mileworks.gen.system.service;
 
-import java.util.List;
-
-import com.baomidou.mybatisplus.service.IService;
+import com.mileworks.gen.common.domain.QueryRequest;
 import com.mileworks.gen.system.domain.Role;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 public interface RoleService extends IService<Role> {
 
-	List<Role> findUserRole(String userName);
+    IPage<Role> findRoles(Role role, QueryRequest request);
 
-	Role findByName(String roleName);
+    List<Role> findUserRole(String userName);
 
-	void createRole(Role role);
+    Role findByName(String roleName);
 
-	void deleteRoles(String[] roleIds) throws Exception;
+    void createRole(Role role);
 
-	void updateRole(Role role) throws Exception;
+    void deleteRoles(String[] roleIds) throws Exception;
+
+    void updateRole(Role role) throws Exception;
 }

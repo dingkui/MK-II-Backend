@@ -1,11 +1,10 @@
 package com.mileworks.gen.system.domain;
 
-import com.baomidou.mybatisplus.annotations.TableField;
-import com.baomidou.mybatisplus.annotations.TableId;
-import com.baomidou.mybatisplus.annotations.TableName;
-import com.baomidou.mybatisplus.enums.IdType;
 import com.mileworks.gen.common.converter.TimeConverter;
 import com.mileworks.gen.common.domain.RegexpConstant;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.wuwenze.poi.annotation.Excel;
 import com.wuwenze.poi.annotation.ExcelField;
 import lombok.Data;
@@ -19,7 +18,6 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Data
-@ToString
 @TableName("t_user")
 @Excel("用户信息表")
 public class User implements Serializable {
@@ -49,83 +47,63 @@ public class User implements Serializable {
     @TableId(value = "USER_ID", type = IdType.AUTO)
     private Long userId;
 
-    @TableField("USERNAME")
     @Size(min = 4, max = 10, message = "{range}")
     @ExcelField(value = "用户名")
     private String username;
 
-    @TableField("PASSWORD")
     private String password;
 
-    @TableField("DEPT_ID")
     private Long deptId;
 
-    @TableField(exist = false)
     @ExcelField(value = "部门")
-    private String deptName;
+    private transient String deptName;
 
-    @TableField("EMAIL")
     @Size(max = 50, message = "{noMoreThan}")
     @Email(message = "{email}")
     @ExcelField(value = "邮箱")
     private String email;
 
-    @TableField("MOBILE")
     @Pattern(regexp = RegexpConstant.MOBILE_REG, message = "{mobile}")
     @ExcelField(value = "手机号")
     private String mobile;
 
-    @TableField("STATUS")
     @NotBlank(message = "{required}")
     @ExcelField(value = "状态", writeConverterExp = "0=锁定,1=有效")
     private String status;
 
-    @TableField("CREATE_TIME")
     @ExcelField(value = "创建时间", writeConverter = TimeConverter.class)
     private Date createTime;
 
-    @TableField("MODIFY_TIME")
     private Date modifyTime;
 
-    @TableField("LAST_LOGIN_TIME")
     @ExcelField(value = "最后登录时间", writeConverter = TimeConverter.class)
     private Date lastLoginTime;
 
-    @TableField("SSEX")
     @NotBlank(message = "{required}")
     @ExcelField(value = "性别", writeConverterExp = "0=男,1=女,2=保密")
     private String ssex;
 
-    @TableField("DESCRIPTION")
     @Size(max = 100, message = "{noMoreThan}")
     @ExcelField(value = "个人描述")
     private String description;
 
-    @TableField("AVATAR")
     private String avatar;
 
-    @TableField(exist = false)
     @NotBlank(message = "{required}")
-    private String roleId;
-    @TableField(exist = false)
+    private transient String roleId;
     @ExcelField(value = "角色")
-    private String roleName;
+    private transient String roleName;
 
     // 排序字段
-    @TableField(exist = false)
-    private String sortField;
+    private transient String sortField;
 
     // 排序规则 ascend 升序 descend 降序
-    @TableField(exist = false)
-    private String sortOrder;
+    private transient String sortOrder;
 
-    @TableField(exist = false)
-    private String createTimeFrom;
-    @TableField(exist = false)
-    private String createTimeTo;
+    private transient String createTimeFrom;
+    private transient String createTimeTo;
 
-    @TableField(exist = false)
-    private String id;
+    private transient String id;
 
     /**
      * shiro-redis v3.1.0 必须要有 getAuthCacheKey()或者 getId()方法

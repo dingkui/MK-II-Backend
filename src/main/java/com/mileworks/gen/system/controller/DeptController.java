@@ -1,10 +1,12 @@
 package com.mileworks.gen.system.controller;
 
 import com.mileworks.gen.common.annotation.Log;
+import com.mileworks.gen.common.controller.BaseController;
 import com.mileworks.gen.common.domain.QueryRequest;
 import com.mileworks.gen.common.exception.MKException;
 import com.mileworks.gen.system.domain.Dept;
 import com.mileworks.gen.system.service.DeptService;
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.wuwenze.poi.ExcelKit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -22,7 +24,7 @@ import java.util.Map;
 @Validated
 @RestController
 @RequestMapping("dept")
-public class DeptController {
+public class DeptController extends BaseController {
 
     private String message;
 
@@ -52,7 +54,7 @@ public class DeptController {
     @RequiresPermissions("dept:delete")
     public void deleteDepts(@NotBlank(message = "{required}") @PathVariable String deptIds) throws MKException {
         try {
-            String[] ids = deptIds.split(",");
+            String[] ids = deptIds.split(StringPool.COMMA);
             this.deptService.deleteDepts(ids);
         } catch (Exception e) {
             message = "删除部门失败";

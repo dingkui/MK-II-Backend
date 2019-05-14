@@ -1,7 +1,7 @@
 package com.mileworks.gen.system.controller;
 
-import com.baomidou.mybatisplus.plugins.Page;
 import com.mileworks.gen.common.annotation.Log;
+import com.mileworks.gen.common.controller.BaseController;
 import com.mileworks.gen.common.domain.QueryRequest;
 import com.mileworks.gen.common.exception.MKException;
 import com.mileworks.gen.common.utils.MD5Util;
@@ -9,6 +9,7 @@ import com.mileworks.gen.system.domain.User;
 import com.mileworks.gen.system.domain.UserConfig;
 import com.mileworks.gen.system.service.UserConfigService;
 import com.mileworks.gen.system.service.UserService;
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.wuwenze.poi.ExcelKit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -21,12 +22,13 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Validated
 @RestController
 @RequestMapping("user")
-public class UserController {
+public class UserController extends BaseController {
 
     private String message;
 
@@ -47,9 +49,8 @@ public class UserController {
 
     @GetMapping
     @RequiresPermissions("user:view")
-    public Page<User> userList(QueryRequest request, User user) {
-        Page<User> userPage = new Page<>(request.getPageNum(),request.getPageSize());
-        return this.userService.findUserPage(userPage,user);
+    public Map<String, Object> userList(QueryRequest queryRequest, User user) {
+        return getDataTable(userService.findUserDetail(user, queryRequest));
     }
 
     @Log("新增用户")
@@ -83,7 +84,7 @@ public class UserController {
     @RequiresPermissions("user:delete")
     public void deleteUsers(@NotBlank(message = "{required}") @PathVariable String userIds) throws MKException {
         try {
-            String[] ids = userIds.split(",");
+            String[] ids = userIds.split(StringPool.COMMA);
             this.userService.deleteUsers(ids);
         } catch (Exception e) {
             message = "删除用户失败";
@@ -156,7 +157,7 @@ public class UserController {
     @RequiresPermissions("user:reset")
     public void resetPassword(@NotBlank(message = "{required}") String usernames) throws MKException {
         try {
-            String[] usernameArr = usernames.split(",");
+            String[] usernameArr = usernames.split(StringPool.COMMA);
             this.userService.resetPassword(usernameArr);
         } catch (Exception e) {
             message = "重置用户密码失败";
@@ -167,9 +168,9 @@ public class UserController {
 
     @PostMapping("excel")
     @RequiresPermissions("user:export")
-    public void export(User user, QueryRequest request, HttpServletResponse response) throws MKException {
+    public void export(QueryRequest queryRequest, User user, HttpServletResponse response) throws MKException {
         try {
-            List<User> users = this.userService.findUserDetail(user, request);
+            List<User> users = this.userService.findUserDetail(user, queryRequest).getRecords();
             ExcelKit.$Export(User.class, response).downXlsx(users, false);
         } catch (Exception e) {
             message = "导出Excel失败";

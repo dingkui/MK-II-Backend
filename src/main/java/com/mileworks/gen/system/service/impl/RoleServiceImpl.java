@@ -1,17 +1,7 @@
 package com.mileworks.gen.system.service.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import com.mileworks.gen.common.domain.QueryRequest;
+import com.mileworks.gen.common.utils.SortUtil;
 import com.mileworks.gen.system.dao.RoleMapper;
 import com.mileworks.gen.system.dao.RoleMenuMapper;
 import com.mileworks.gen.system.domain.Role;
@@ -20,8 +10,21 @@ import com.mileworks.gen.system.manager.UserManager;
 import com.mileworks.gen.system.service.RoleMenuServie;
 import com.mileworks.gen.system.service.RoleService;
 import com.mileworks.gen.system.service.UserRoleService;
-
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Service("roleService")
@@ -38,25 +41,43 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     private UserManager userManager;
 
     @Override
+    public IPage<Role> findRoles(Role role, QueryRequest request) {
+        try {
+            LambdaQueryWrapper<Role> queryWrapper = new LambdaQueryWrapper<>();
+
+            if (StringUtils.isNotBlank(role.getRoleName())) {
+                queryWrapper.eq(Role::getRoleName, role.getRoleName());
+            }
+            if (StringUtils.isNotBlank(role.getCreateTimeFrom()) && StringUtils.isNotBlank(role.getCreateTimeTo())) {
+                queryWrapper
+                        .ge(Role::getCreateTime, role.getCreateTimeFrom())
+                        .le(Role::getCreateTime, role.getCreateTimeTo());
+            }
+            Page<Role> page = new Page<>();
+            SortUtil.handlePageSort(request, page, true);
+            return this.page(page,queryWrapper);
+        } catch (Exception e) {
+            log.error("获取角色信息失败", e);
+            return null;
+        }
+    }
+
+    @Override
     public List<Role> findUserRole(String userName) {
-//        return this.roleMenuMapper.findUserRole(userName);
-        return new ArrayList<>();
+        return baseMapper.findUserRole(userName);
     }
 
     @Override
     public Role findByName(String roleName) {
-        EntityWrapper<Role> roleWrapper = new EntityWrapper<>();
-        roleWrapper.and("lower(role_name)={0}", roleName.toLowerCase());
-        List<Role> list = this.selectList(roleWrapper);
-        return list.isEmpty() ? null : list.get(0);
+        return baseMapper.selectOne(new LambdaQueryWrapper<Role>().eq(Role::getRoleName, roleName));
     }
 
     @Override
     public void createRole(Role role) {
         role.setCreateTime(new Date());
-        this.insert(role);
+        this.save(role);
 
-        String[] menuIds = role.getMenuId().split(",");
+        String[] menuIds = role.getMenuId().split(StringPool.COMMA);
         setRoleMenus(role, menuIds);
     }
 
@@ -66,13 +87,15 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         List<String> userIds = this.userRoleService.findUserIdsByRoleId(roleIds);
 
         List<String> list = Arrays.asList(roleIds);
-        this.deleteBatchIds(list);
+
+        baseMapper.deleteBatchIds(list);
 
         this.roleMenuService.deleteRoleMenusByRoleId(roleIds);
         this.userRoleService.deleteUserRolesByRoleId(roleIds);
 
         // 重新将这些用户的角色和权限缓存到 Redis中
         this.userManager.loadUserPermissionRoleRedisCache(userIds);
+
     }
 
     @Override
@@ -82,13 +105,11 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         List<String> userIds = this.userRoleService.findUserIdsByRoleId(roleId);
 
         role.setModifyTime(new Date());
-        this.updateById(role);
+        baseMapper.updateById(role);
 
-        EntityWrapper<RoleMenu> roleMenuWrapper = new EntityWrapper<>();
-        roleMenuWrapper.eq("role_id", role.getRoleId());
-        this.roleMenuMapper.delete(roleMenuWrapper);
+        roleMenuMapper.delete(new LambdaQueryWrapper<RoleMenu>().eq(RoleMenu::getRoleId, role.getRoleId()));
 
-        String[] menuIds = role.getMenuId().split(",");
+        String[] menuIds = role.getMenuId().split(StringPool.COMMA);
         setRoleMenus(role, menuIds);
 
         // 重新将这些用户的角色和权限缓存到 Redis中

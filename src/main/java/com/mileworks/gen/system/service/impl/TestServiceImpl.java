@@ -1,15 +1,12 @@
 package com.mileworks.gen.system.service.impl;
 
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.service.IService;
-import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.mileworks.gen.system.dao.TestMapper;
 import com.mileworks.gen.system.domain.Test;
 import com.mileworks.gen.system.service.TestService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,16 +19,13 @@ import java.util.List;
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
 public class TestServiceImpl extends ServiceImpl<TestMapper, Test> implements TestService {
 
-    @Value("${MK.max.batch.insert.num}")
+    @Value("${febs.max.batch.insert.num}")
     private int batchInsertMaxNum;
 
     @Override
     public List<Test> findTests() {
         try {
-            EntityWrapper<Test> testEntityWrapper = new EntityWrapper<>();
-            testEntityWrapper.orderBy("create_time", false);
-
-            return this.selectList(testEntityWrapper);
+            return baseMapper.selectList(new QueryWrapper<Test>().orderByDesc("create_time"));
         } catch (Exception e) {
             log.error("获取信息失败", e);
             return new ArrayList<>();
@@ -53,11 +47,11 @@ public class TestServiceImpl extends ServiceImpl<TestMapper, Test> implements Te
             int end = max * (i + 1);
             if (i != count) {
                 log.info("正在插入第" + (start + 1) + " ~ " + end + "条记录 ······");
-                this.insertBatch(list.subList(start, end));
+                saveBatch(list, end);
             } else {
                 end = total;
                 log.info("正在插入第" + (start + 1) + " ~ " + end + "条记录 ······");
-                this.insertBatch(list.subList(start, end));
+                saveBatch(list, end);
             }
         }
     }

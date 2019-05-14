@@ -1,15 +1,14 @@
 package com.mileworks.gen.system.controller;
 
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.plugins.Page;
 import com.mileworks.gen.common.annotation.Log;
+import com.mileworks.gen.common.controller.BaseController;
 import com.mileworks.gen.common.domain.QueryRequest;
 import com.mileworks.gen.common.exception.MKException;
 import com.mileworks.gen.system.domain.Dict;
 import com.mileworks.gen.system.service.DictService;
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.wuwenze.poi.ExcelKit;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -19,12 +18,13 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Validated
 @RestController
 @RequestMapping("dict")
-public class DictController {
+public class DictController extends BaseController {
 
     private String message;
 
@@ -33,24 +33,8 @@ public class DictController {
 
     @GetMapping
     @RequiresPermissions("dict:view")
-    public Page<Dict> DictList(QueryRequest request, Dict dict) {
-        EntityWrapper<Dict> dictWrapper = new EntityWrapper<>();
-        dictWrapper.orderBy(request.getSortField());
-
-        if (StringUtils.isNotBlank(dict.getKeyy())) {
-            dictWrapper.eq("keyy", Long.valueOf(dict.getKeyy()));
-        }
-        if (StringUtils.isNotBlank(dict.getValuee())) {
-            dictWrapper.eq("valuee", dict.getValuee());
-        }
-        if (StringUtils.isNotBlank(dict.getTableName())) {
-            dictWrapper.eq("table_name", dict.getTableName());
-        }
-        if (StringUtils.isNotBlank(dict.getFieldName())) {
-            dictWrapper.eq("field_name", dict.getFieldName());
-        }
-        Page<Dict> jobLogPage = new Page<>(request.getPageNum(), request.getPageSize());
-        return this.dictService.selectPage(jobLogPage, dictWrapper);
+    public Map<String, Object> DictList(QueryRequest request, Dict dict) {
+        return getDataTable(this.dictService.findDicts(request, dict));
     }
 
     @Log("新增字典")
@@ -71,7 +55,7 @@ public class DictController {
     @RequiresPermissions("dict:delete")
     public void deleteDicts(@NotBlank(message = "{required}") @PathVariable String dictIds) throws MKException {
         try {
-            String[] ids = dictIds.split(",");
+            String[] ids = dictIds.split(StringPool.COMMA);
             this.dictService.deleteDicts(ids);
         } catch (Exception e) {
             message = "删除字典成功";
@@ -95,9 +79,9 @@ public class DictController {
 
     @PostMapping("excel")
     @RequiresPermissions("dict:export")
-    public void export(Dict dict, QueryRequest request, HttpServletResponse response) throws MKException {
+    public void export(QueryRequest request, Dict dict, HttpServletResponse response) throws MKException {
         try {
-            List<Dict> dicts = this.dictService.findDicts(request, dict);
+            List<Dict> dicts = this.dictService.findDicts(request, dict).getRecords();
             ExcelKit.$Export(Dict.class, response).downXlsx(dicts, false);
         } catch (Exception e) {
             message = "导出Excel失败";

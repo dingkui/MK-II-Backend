@@ -1,9 +1,9 @@
 package com.mileworks.gen.system.dao;
 
 
-import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.mileworks.gen.system.domain.LoginLog;
 import com.mileworks.gen.system.domain.User;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
 import java.util.Map;

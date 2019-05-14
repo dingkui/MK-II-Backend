@@ -1,14 +1,20 @@
 package com.mileworks.gen.system.dao;
 
-import com.baomidou.mybatisplus.mapper.BaseMapper;
-import com.baomidou.mybatisplus.plugins.pagination.Pagination;
 import com.mileworks.gen.system.domain.User;
-
-import java.util.List;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
 
 public interface UserMapper extends BaseMapper<User> {
 
-	List<User> findUserList(User user);
+    IPage<User> findUserDetail(Page page, @Param("user") User user);
 
-	List<User> findUserList(Pagination page, User user);
+    /**
+     * 获取单个用户详情
+     *
+     * @param username 用户名
+     * @return 用户信息
+     */
+    User findDetail(String username);
 }

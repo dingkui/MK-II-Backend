@@ -1,7 +1,5 @@
 package com.mileworks.gen.system.service.impl;
 
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.mileworks.gen.common.domain.MKConstant;
 import com.mileworks.gen.common.domain.Tree;
 import com.mileworks.gen.common.utils.TreeUtil;
@@ -9,6 +7,8 @@ import com.mileworks.gen.system.dao.MenuMapper;
 import com.mileworks.gen.system.domain.Menu;
 import com.mileworks.gen.system.manager.UserManager;
 import com.mileworks.gen.system.service.MenuService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,19 +40,10 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     public Map<String, Object> findMenus(Menu menu) {
         Map<String, Object> result = new HashMap<>();
         try {
+            LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
+            findMenuCondition(queryWrapper, menu);
+            List<Menu> menus = baseMapper.selectList(queryWrapper);
 
-            EntityWrapper<Menu> menuWrapper = new EntityWrapper<>();
-            menuWrapper.orderBy("order_num");
-
-            if (StringUtils.isNotBlank(menu.getMenuName()))
-                menuWrapper.eq("menu_name", menu.getMenuName());
-            if (StringUtils.isNotBlank(menu.getType()))
-                menuWrapper.eq("type", Long.valueOf(menu.getType()));
-            if (StringUtils.isNotBlank(menu.getCreateTimeFrom()) && StringUtils.isNotBlank(menu.getCreateTimeTo())) {
-                menuWrapper.and("date_format(CREATE_TIME,'%Y-%m-%d') >={0}", menu.getCreateTimeFrom());
-                menuWrapper.and("date_format(CREATE_TIME,'%Y-%m-%d') <={0}", menu.getCreateTimeTo());
-            }
-            List<Menu> menus = this.selectList(menuWrapper);
             List<Tree<Menu>> trees = new ArrayList<>();
             List<String> ids = new ArrayList<>();
             buildTrees(trees, menus, ids);
@@ -74,48 +65,29 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         return result;
     }
 
+
     @Override
     public List<Menu> findMenuList(Menu menu) {
-        EntityWrapper<Menu> menuWrapper = new EntityWrapper<>();
-        menuWrapper.orderBy("menu_id");
-
-        if (StringUtils.isNotBlank(menu.getMenuName()))
-            menuWrapper.eq("menu_name", menu.getMenuName());
-        if (StringUtils.isNotBlank(menu.getType()))
-            menuWrapper.eq("type", Long.valueOf(menu.getType()));
-        if (StringUtils.isNotBlank(menu.getCreateTimeFrom()) && StringUtils.isNotBlank(menu.getCreateTimeTo())) {
-            menuWrapper.and("date_format(CREATE_TIME,'%Y-%m-%d') >={0}", menu.getCreateTimeFrom());
-            menuWrapper.and("date_format(CREATE_TIME,'%Y-%m-%d') <={0}", menu.getCreateTimeTo());
-        }
-        return this.selectList(menuWrapper);
+        LambdaQueryWrapper<Menu> queryWrapper = new LambdaQueryWrapper<>();
+        findMenuCondition(queryWrapper, menu);
+        queryWrapper.orderByAsc(Menu::getMenuId);
+        return this.baseMapper.selectList(queryWrapper);
     }
 
     @Override
     @Transactional
     public void createMenu(Menu menu) {
         menu.setCreateTime(new Date());
-        if (menu.getParentId() == null)
-            menu.setParentId(0L);
-        if (Menu.TYPE_BUTTON.equals(menu.getType())) {
-            menu.setPath(null);
-            menu.setIcon(null);
-            menu.setComponent(null);
-        }
-        this.insert(menu);
+        setMenu(menu);
+        this.save(menu);
     }
 
     @Override
     @Transactional
     public void updateMenu(Menu menu) throws Exception {
         menu.setModifyTime(new Date());
-        if (menu.getParentId() == null)
-            menu.setParentId(0L);
-        if (Menu.TYPE_BUTTON.equals(menu.getType())) {
-            menu.setPath(null);
-            menu.setIcon(null);
-            menu.setComponent(null);
-        }
-        this.updateById(menu);
+        setMenu(menu);
+        baseMapper.updateById(menu);
 
         // 查找与这些菜单/按钮关联的用户
         List<String> userIds = this.baseMapper.findUserIdsByMenuId(String.valueOf(menu.getMenuId()));
@@ -156,4 +128,29 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             trees.add(tree);
         });
     }
+
+    private void setMenu(Menu menu) {
+        if (menu.getParentId() == null)
+            menu.setParentId(0L);
+        if (Menu.TYPE_BUTTON.equals(menu.getType())) {
+            menu.setPath(null);
+            menu.setIcon(null);
+            menu.setComponent(null);
+        }
+    }
+
+    private void findMenuCondition(LambdaQueryWrapper<Menu> queryWrapper, Menu menu) {
+        if (StringUtils.isNotBlank(menu.getMenuName())) {
+            queryWrapper.eq(Menu::getMenuName, menu.getMenuName());
+        }
+        if (StringUtils.isNotBlank(menu.getType())) {
+            queryWrapper.eq(Menu::getType, menu.getType());
+        }
+        if (StringUtils.isNotBlank(menu.getCreateTimeFrom()) && StringUtils.isNotBlank(menu.getCreateTimeTo())) {
+            queryWrapper
+                    .ge(Menu::getCreateTime, menu.getCreateTimeFrom())
+                    .le(Menu::getCreateTime, menu.getCreateTimeTo());
+        }
+    }
+
 }
